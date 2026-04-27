@@ -1,6 +1,18 @@
 const { sendError } = require("../utils/httpResponse");
+const { formatZodErrorMessage, ZodError } = require("../utils/zodErrorMessage");
 
 function errorHandler(err, req, res, next) {
+  if (err instanceof ZodError) {
+    const message = formatZodErrorMessage(err) || "Données invalides.";
+    const details = { issues: err.issues };
+    return sendError(res, {
+      statusCode: 400,
+      code: "VALIDATION_ERROR",
+      message,
+      details
+    });
+  }
+
   const statusCode = err.statusCode || 500;
   const message = err.message || "Unexpected server error";
   const code = err.code || "INTERNAL_ERROR";

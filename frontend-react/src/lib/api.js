@@ -1,6 +1,40 @@
 /** En prod, définir VITE_API_URL (ex. https://ton-api.onrender.com/api) sur l’hébergeur du front. */
 export const API_BASE = (import.meta.env.VITE_API_URL || "http://localhost:4000/api").replace(/\/$/, "");
 
+/** Short user-facing message from API error payload (handles legacy Zod JSON in message). */
+export function formatApiErrorMessage(payload) {
+  const msg = payload?.error?.message;
+  if (typeof msg === "string" && msg.trim().startsWith("[")) {
+    try {
+      const issues = JSON.parse(msg);
+      if (Array.isArray(issues)) {
+        const parts = issues.map((iss) => {
+          const path = Array.isArray(iss.path) && iss.path.length ? iss.path.join(".") : "";
+          const label =
+            path === "email"
+              ? "Email"
+              : path === "password"
+                ? "Mot de passe"
+                : path === "businessName"
+                  ? "Nom du commerce"
+                  : path || "Champ";
+          if (iss.code === "invalid_format" && iss.format === "email") return `${label} : adresse invalide.`;
+          if (iss.code === "too_small" && typeof iss.minimum === "number") {
+            return path === "password"
+              ? `Mot de passe : au moins ${iss.minimum} caractères.`
+              : `${label} : au moins ${iss.minimum} caractères.`;
+          }
+          return iss.message ? `${label} : ${iss.message}` : label;
+        });
+        return [...new Set(parts)].join(" ");
+      }
+    } catch {
+      /* fall through */
+    }
+  }
+  return typeof msg === "string" && msg.length ? msg : "Une erreur est survenue.";
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -29,7 +63,7 @@ export async function apiRequest(path, { token, method = "GET", body, retries = 
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok || payload.ok === false) {
-        throw new Error(payload?.error?.message || "API request failed");
+        throw new Error(formatApiErrorMessage(payload));
       }
       return payload;
     } catch (error) {
@@ -63,7 +97,7 @@ export async function trackOnboarding(payload) {
   });
   const json = await response.json().catch(() => ({}));
   if (!response.ok || json.ok === false) {
-    throw new Error(json?.error?.message || "Onboarding track failed");
+    throw new Error(formatApiErrorMessage(json));
   }
   if (json.data?.sessionId) {
     localStorage.setItem(ONBOARDING_SESSION_KEY, json.data.sessionId);
