@@ -301,6 +301,44 @@ pre {
   background: #2563eb;
 }
 
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  word-break: break-all;
+  width: 100%;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+  display: block;
+}
+
+.align-start {
+  align-items: flex-start;
+}
+
+.self-end {
+  align-self: center;
+}
+
+.tiny-inline {
+  padding: 2px 8px;
+  font-size: 11px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+.detail-client-ids {
+  margin-top: 8px;
+  gap: 8px;
+  align-items: center;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;

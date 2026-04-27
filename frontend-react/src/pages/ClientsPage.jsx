@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE, apiRequest, openApplePass } from "../lib/api";
+import { decodeJwtPayload } from "../lib/jwtPayload";
 import { useToast } from "../components/ToastContext";
 
 export function ClientsPage({ auth }) {
@@ -31,6 +32,20 @@ export function ClientsPage({ auth }) {
   const { showToast } = useToast();
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((meta.total || 0) / (meta.limit || 10))), [meta]);
+
+  const merchantId = useMemo(() => decodeJwtPayload(auth.token)?.merchantId ?? null, [auth.token]);
+
+  const qrPayloadForClient = (client) =>
+    merchantId && client?.id ? `${merchantId}:${client.id}:${client.points ?? 0}` : "";
+
+  const copyText = async (text, toastLabel) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(toastLabel || "Copie dans le presse-papiers", "success");
+    } catch {
+      showToast("Copie impossible (navigateur)", "error");
+    }
+  };
 
   const loadClients = async () => {
     setIsLoading(true);
@@ -359,6 +374,27 @@ export function ClientsPage({ auth }) {
       </article>
 
       <article className="card">
+        <h2>Carte visuelle / QR (FidelioGen)</h2>
+        <p className="muted">
+          Pour lier ta carte au scan caisse : dans le générateur, colle <strong>ID commerce</strong> et{" "}
+          <strong>ID client</strong> ci-dessous (format scan : commerce:client:points).
+        </p>
+        {merchantId ? (
+          <div className="row wrap align-start">
+            <label className="grow">
+              ID commerce
+              <input readOnly value={merchantId} className="mono" />
+            </label>
+            <button type="button" className="secondary self-end" onClick={() => copyText(merchantId, "ID commerce copie")}>
+              Copier commerce
+            </button>
+          </div>
+        ) : (
+          <p className="muted">Reconnecte-toi pour afficher ton ID commerce.</p>
+        )}
+      </article>
+
+      <article className="card">
         <h2>Nouveau client</h2>
         <form className="form" onSubmit={createClient}>
           <input
@@ -425,6 +461,15 @@ export function ClientsPage({ auth }) {
                 </p>
               </div>
               <div className="row">
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!qrPayloadForClient(client)}
+                  title="Copie commerce:client:points pour QR FidelioGen"
+                  onClick={() => copyText(qrPayloadForClient(client), "Texte QR copie")}
+                >
+                  Copier QR
+                </button>
                 <button type="button" className="secondary" onClick={() => loadClientHistory(client)}>
                   Detail
                 </button>
@@ -461,6 +506,18 @@ export function ClientsPage({ auth }) {
                 <strong>{selectedClient.full_name}</strong>
                 <p>{selectedClient.email || selectedClient.phone || "Aucun contact"}</p>
                 <p>{selectedClient.visits || 0} visites · {selectedClient.points || 0} points</p>
+                {merchantId ? (
+                  <div className="muted mono small row wrap detail-client-ids">
+                    <span>ID client : {selectedClient.id}</span>
+                    <button
+                      type="button"
+                      className="secondary tiny-inline"
+                      onClick={() => copyText(selectedClient.id, "ID client copie")}
+                    >
+                      Copier ID
+                    </button>
+                  </div>
+                ) : null}
               </div>
               <button type="button" className="danger" disabled={isBusy} onClick={() => deleteClient(selectedClient)}>
                 Supprimer (RGPD)

@@ -1,0 +1,10 @@
+# Deploiement: base directory = frontend-react, build = npm run build, publish = dist
+[build]
+  publish = "dist"
+  command = "npm run build"
+
+# SPA: toutes les routes vers index.html (sinon /clients en direct = 404)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
