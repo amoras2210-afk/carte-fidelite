@@ -1,0 +1,11 @@
+{
+  "id": "MERCHANT_ID.loyalty_class",
+  "issuerName": "Merchant Name",
+  "programName": "Loyalty Program",
+  "reviewStatus": "UNDER_REVIEW",
+  "programLogo": {
+    "sourceUri": {
+      "uri": "https://your-cdn/logo.png"
+    }
+  }
+}

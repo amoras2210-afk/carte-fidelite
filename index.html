@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FidélioGen — Générateur de cartes de fidélité</title>
+  <link rel="stylesheet" href="style_1.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-mark">◈</span>
+        <span class="logo-text">FidélioGen</span>
+      </div>
+      <p class="header-sub">Générateur de cartes de fidélité digitales</p>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- Panneau de contrôle -->
+    <aside class="controls">
+
+      <section class="ctrl-section">
+        <h2 class="ctrl-title">Commerce</h2>
+
+        <div class="field">
+          <label for="shopName">Nom du commerce</label>
+          <input type="text" id="shopName" value="Maison Dorée" placeholder="Ex: Le Petit Café" />
+        </div>
+
+        <div class="field">
+          <label for="tagline">Slogan</label>
+          <input type="text" id="tagline" value="Votre café de quartier" placeholder="Ex: Depuis 1982" />
+        </div>
+
+        <div class="field">
+          <label for="cardHolder">Nom du titulaire</label>
+          <input type="text" id="cardHolder" value="Sophie Martin" placeholder="Nom du client" />
+        </div>
+
+        <div class="field">
+          <label for="qrMerchant">ID commerce (QR)</label>
+          <input type="text" id="qrMerchant" placeholder="Auto depuis le nom du commerce" />
+        </div>
+
+        <div class="field">
+          <label for="qrClient">ID client (QR)</label>
+          <input type="text" id="qrClient" placeholder="Auto depuis le titulaire" />
+        </div>
+
+        <p class="ctrl-hint">Le QR utilise le format <strong>commerce:client:tampons</strong> (comme Loyalty Pro au scan).</p>
+
+        <div class="field">
+          <label>Logo (optionnel)</label>
+          <div class="upload-zone" id="uploadZone">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V4M6 8l4-4 4 4"/><path d="M3 14v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"/></svg>
+            <span id="uploadLabel">Choisir une image</span>
+            <input type="file" id="logoUpload" accept="image/*" />
+          </div>
+        </div>
+      </section>
+
+      <section class="ctrl-section">
+        <h2 class="ctrl-title">Programme de fidélité</h2>
+
+        <div class="field">
+          <label>Type de programme</label>
+          <div class="toggle-group" id="programType">
+            <button class="toggle-btn active" data-value="tampons">Tampons</button>
+            <button class="toggle-btn" data-value="points">Points</button>
+            <button class="toggle-btn" data-value="etoiles">Étoiles</button>
+          </div>
+        </div>
+
+        <div class="row-2">
+          <div class="field">
+            <label for="totalStamps">Total requis</label>
+            <input type="number" id="totalStamps" value="10" min="4" max="20" />
+          </div>
+          <div class="field">
+            <label for="currentStamps">Acquis (aperçu)</label>
+            <input type="number" id="currentStamps" value="4" min="0" max="20" />
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="rewardText">Récompense</label>
+          <input type="text" id="rewardText" value="1 café offert !" placeholder="Ex: 10% de réduction" />
+        </div>
+
+        <div class="field">
+          <label for="expiryDate">Date d'expiration</label>
+          <input type="date" id="expiryDate" />
+        </div>
+      </section>
+
+      <section class="ctrl-section">
+        <h2 class="ctrl-title">Apparence</h2>
+
+        <div class="field">
+          <label>Thème</label>
+          <div class="theme-grid" id="themeGrid">
+            <button class="theme-swatch active" data-theme="gold" title="Or"></button>
+            <button class="theme-swatch" data-theme="night" title="Nuit"></button>
+            <button class="theme-swatch" data-theme="forest" title="Forêt"></button>
+            <button class="theme-swatch" data-theme="rose" title="Rose"></button>
+            <button class="theme-swatch" data-theme="slate" title="Ardoise"></button>
+            <button class="theme-swatch" data-theme="ocean" title="Océan"></button>
+            <button class="theme-swatch theme-custom" data-theme="custom" title="Personnalisé" id="customSwatch">+</button>
+          </div>
+        </div>
+
+        <div id="customColorFields" style="display:none">
+          <div class="row-2">
+            <div class="field">
+              <label for="colBg">Fond</label>
+              <input type="color" id="colBg" value="#1a1208" />
+            </div>
+            <div class="field">
+              <label for="colAccent">Accent</label>
+              <input type="color" id="colAccent" value="#c9a84c" />
+            </div>
+          </div>
+          <div class="row-2">
+            <div class="field">
+              <label for="colText">Texte</label>
+              <input type="color" id="colText" value="#fdf6e3" />
+            </div>
+            <div class="field">
+              <label for="colStamp">Tampon vide</label>
+              <input type="color" id="colStamp" value="#3a2e14" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Style de carte</label>
+          <div class="toggle-group" id="cardStyle">
+            <button class="toggle-btn active" data-value="modern">Moderne</button>
+            <button class="toggle-btn" data-value="minimal">Minimal</button>
+            <button class="toggle-btn" data-value="bold">Audacieux</button>
+          </div>
+        </div>
+      </section>
+
+    </aside>
+
+    <!-- Zone d'aperçu -->
+    <section class="preview-area">
+
+      <div class="preview-header">
+        <h2 class="preview-title">Aperçu en direct</h2>
+        <div class="preview-actions">
+          <button class="btn-secondary" id="btnCopyCSS">Copier les couleurs</button>
+          <button class="btn-primary" id="btnExport">⬇ Télécharger PNG</button>
+        </div>
+      </div>
+
+      <div class="card-stage">
+        <canvas id="cardCanvas"></canvas>
+      </div>
+
+      <div class="stamps-section">
+        <div class="stamps-header">
+          <h3 class="stamps-title">Grille de tampons interactive</h3>
+          <span class="stamps-count" id="stampsCount">4 / 10</span>
+        </div>
+        <div class="stamps-grid" id="stampsGrid"></div>
+        <div class="reward-alert" id="rewardAlert" style="display:none">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l1.8 3.6L14 5.3l-3 2.9.7 4.1L8 10.4l-3.7 1.9.7-4.1-3-2.9 4.2-.7z"/></svg>
+          <span id="rewardAlertText">Récompense débloquée !</span>
+        </div>
+      </div>
+
+      <div class="push-section">
+        <h3 class="push-title">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 2a6 6 0 0 1 6 6v1l2 3H2l2-3V8a6 6 0 0 1 6-6z"/><path d="M8 17a2 2 0 0 0 4 0"/></svg>
+          Simulateur de message push
+        </h3>
+        <div class="push-composer">
+          <div class="field">
+            <label for="pushTitle">Titre</label>
+            <input type="text" id="pushTitle" value="Un cadeau vous attend !" />
+          </div>
+          <div class="field">
+            <label for="pushBody">Message</label>
+            <textarea id="pushBody" rows="2">Vous avez cumulé 4 points. Plus que 6 pour votre récompense !</textarea>
+          </div>
+          <button class="btn-primary full-width" id="btnSendPush">Prévisualiser la notification</button>
+        </div>
+
+        <div class="push-preview" id="pushPreview" style="display:none">
+          <div class="push-phone">
+            <div class="push-status-bar">
+              <span>9:41</span>
+              <span>●●●</span>
+            </div>
+            <div class="push-notif" id="pushNotif">
+              <div class="push-notif-app">
+                <div class="push-app-icon">◈</div>
+                <span class="push-app-name" id="pvAppName">Maison Dorée</span>
+                <span class="push-notif-time">maintenant</span>
+              </div>
+              <p class="push-notif-title" id="pvTitle"></p>
+              <p class="push-notif-body" id="pvBody"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module">
+    try {
+      const qr = await import("https://cdn.jsdelivr.net/npm/qrcode@1.5.4/+esm");
+      window.__QRCodeBrowser = qr.default ?? qr;
+    } catch (e) {
+      console.warn("QR module:", e);
+    }
+  </script>
+  <script defer src="script.js"></script>
+</body>
+</html>

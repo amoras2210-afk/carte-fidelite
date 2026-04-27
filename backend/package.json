@@ -1,0 +1,36 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Backend API for digital loyalty wallet SaaS",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test",
+    "db:check": "node -e \"require('./src/config/db').query('SELECT NOW()').then(()=>{console.log('DB OK');process.exit(0)}).catch((e)=>{console.error(e.message);process.exit(1)})\"",
+    "db:migrate": "psql \"$DATABASE_URL\" -f ../database/schema.sql && psql \"$DATABASE_URL\" -f ../database/migration_002_audit_logs.sql && psql \"$DATABASE_URL\" -f ../database/migration_003_onboarding_import_business.sql && psql \"$DATABASE_URL\" -f ../database/migration_004_client_visits.sql"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.6",
+    "csv-parse": "^6.2.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.4.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^8.0.7",
+    "passkit-generator": "^3.5.7",
+    "pg": "^8.20.0",
+    "qrcode": "^1.5.4",
+    "uuid": "^14.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}

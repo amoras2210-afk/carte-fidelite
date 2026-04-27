@@ -1,0 +1,317 @@
+:root {
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.sidebar {
+  background: #0f172a;
+  color: #cbd5e1;
+  padding: 20px;
+}
+
+.brand {
+  color: #f8fafc;
+  margin: 0 0 24px;
+  font-size: 22px;
+}
+
+.nav-link {
+  display: block;
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+
+.nav-link.active {
+  background: #1e293b;
+  color: #fff;
+}
+
+.content {
+  padding: 20px;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.stat strong {
+  font-size: 30px;
+}
+
+.form {
+  display: grid;
+  gap: 10px;
+}
+
+input,
+textarea,
+button {
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: #334155;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.table {
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+  justify-content: space-between;
+}
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+.timeline {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+.timeline-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px;
+  background: #f8fafc;
+}
+.badge {
+  display: inline-block;
+  margin-top: 6px;
+  border-radius: 999px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.danger {
+  background: #dc2626;
+}
+
+.scanner {
+  width: 100%;
+  min-height: 160px;
+  border-radius: 12px;
+  background: #0f172a;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+.onboarding {
+  border: 1px solid #dbeafe;
+  background: #eff6ff;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.onboarding-title {
+  font-weight: 600;
+  margin: 0 0 6px;
+}
+.onboarding ol {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+.wizard .wizard-steps {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.wizard .wizard-steps button {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  padding: 0;
+  background: #cbd5e1;
+  color: #0f172a;
+}
+.wizard .wizard-steps button.active {
+  background: #2563eb;
+  color: #fff;
+}
+
+.consent {
+  display: flex;
+  gap: 8px;
+  font-size: 14px;
+}
+
+pre {
+  white-space: pre-wrap;
+  background: #0f172a;
+  color: #dbeafe;
+  padding: 10px;
+  border-radius: 10px;
+  max-height: 320px;
+  overflow: auto;
+}
+
+.toast {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  color: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+.toast.info {
+  background: #1d4ed8;
+}
+.toast.success {
+  background: #15803d;
+}
+.toast.error {
+  background: #b91c1c;
+}
+
+.skeleton {
+  background: #f1f5f9;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #64748b;
+  margin: 8px 0;
+}
+
+.muted {
+  color: #64748b;
+  font-size: 14px;
+}
+
+.row.wrap {
+  flex-wrap: wrap;
+}
+
+.row.spread {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.card.inner {
+  padding: 12px;
+  border-radius: 12px;
+}
+
+.import-mapping select {
+  min-width: 140px;
+}
+
+.table.compact .item {
+  padding-bottom: 6px;
+}
+
+.funnel-steps {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.funnel-bar {
+  display: grid;
+  grid-template-columns: 120px 1fr 60px;
+  gap: 8px;
+  align-items: center;
+}
+
+.funnel-bar .bar {
+  height: 10px;
+  background: #e2e8f0;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.funnel-bar .fill {
+  height: 100%;
+  background: #2563eb;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+  .sidebar {
+    display: flex;
+    gap: 8px;
+    overflow: auto;
+  }
+  .nav-link {
+    margin-bottom: 0;
+    white-space: nowrap;
+  }
+}

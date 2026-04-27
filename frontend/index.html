@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carte Fidelite SaaS</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="card">
+        <h1>Dashboard Fidelite</h1>
+        <p class="subtitle">MVP commerçant (mobile-first)</p>
+
+        <div id="authBox">
+          <h2>Connexion commerçant</h2>
+          <form id="loginForm">
+            <input id="email" type="email" placeholder="Email" required />
+            <input id="password" type="password" placeholder="Mot de passe" required />
+            <button type="submit">Se connecter</button>
+          </form>
+          <button id="registerBtn" class="secondary">Créer un compte test</button>
+        </div>
+
+        <div id="dashboard" class="hidden">
+          <h2>Clients</h2>
+          <form id="clientForm">
+            <input id="clientName" placeholder="Nom client" required />
+            <input id="clientPhone" placeholder="Téléphone" />
+            <input id="clientEmail" type="email" placeholder="Email" />
+            <button type="submit">Ajouter client</button>
+          </form>
+
+          <ul id="clientsList"></ul>
+
+          <h2>Scan QR client</h2>
+          <div class="scanner-box">
+            <video id="scannerVideo" playsinline class="scanner-video"></video>
+            <div class="row">
+              <button id="startScanBtn" type="button">Demarrer scan</button>
+              <button id="stopScanBtn" type="button" class="secondary">Arreter</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="status"></p>
+      </section>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "carte-fidelite-platform",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "npm run dev --prefix backend & npm run dev --prefix frontend-react",
+    "build": "npm run build --prefix frontend-react",
+    "test": "npm test --prefix backend"
+  }
+}
