@@ -20,6 +20,7 @@ body {
   display: grid;
   grid-template-columns: 240px 1fr;
   min-height: 100vh;
+  background: #f8fafc;
 }
 
 .sidebar {
@@ -57,6 +58,17 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 16px;
+  gap: 12px;
+}
+
+.topbar-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+.topbar-title strong {
+  font-size: 16px;
 }
 
 .grid {
@@ -101,6 +113,12 @@ button {
   border: none;
   font-weight: 600;
 }
+
+button,
+.nav-link,
+.mobile-nav-link {
+  -webkit-tap-highlight-color: transparent;
+}
 button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -114,6 +132,10 @@ button.secondary {
   display: flex;
   gap: 8px;
   align-items: center;
+}
+
+.row.wrap {
+  flex-wrap: wrap;
 }
 
 .table {
@@ -312,8 +334,29 @@ pre {
   font-size: 12px;
 }
 
-.row.wrap {
-  flex-wrap: wrap;
+/* Mobile nav (bottom tab bar) */
+.mobile-nav {
+  display: none;
+}
+
+.mobile-nav-link {
+  text-decoration: none;
+  color: #334155;
+  font-size: 12px;
+  padding: 10px 10px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.mobile-nav-link.active {
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+}
+
+.mobile-nav-label {
+  display: block;
+  line-height: 1.1;
 }
 
 .wallet-grid {
@@ -467,12 +510,61 @@ pre {
     grid-template-columns: 1fr;
   }
   .sidebar {
-    display: flex;
-    gap: 8px;
-    overflow: auto;
+    display: none;
   }
-  .nav-link {
-    margin-bottom: 0;
-    white-space: nowrap;
+
+  .content {
+    padding: 14px;
+    padding-bottom: calc(14px + 74px);
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 10px 10px;
+    margin: -14px -14px 12px;
+    background: rgba(248, 250, 252, 0.92);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e2e8f0;
+  }
+
+  .mobile-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    position: fixed;
+    left: 10px;
+    right: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    padding: 10px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.14);
+  }
+
+  /* Limit to key sections on small screens: keep first 4 links visible */
+  .mobile-nav-link:nth-child(n + 5) {
+    display: none;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    flex-wrap: wrap;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
   }
 }

@@ -12,18 +12,15 @@ const links = [
 
 export function DashboardLayout({ auth, children }) {
   const location = useLocation();
+  const isActive = (to) => (to === "/" ? location.pathname === "/" : location.pathname.startsWith(to));
 
   return (
     <div className="shell">
-      <aside className="sidebar">
+      <aside className="sidebar" aria-label="Navigation">
         <h1 className="brand">Loyalty Pro</h1>
         <nav>
           {links.map((item) => (
-            <Link
-              key={item.to}
-              className={`nav-link ${location.pathname === item.to ? "active" : ""}`}
-              to={item.to}
-            >
+            <Link key={item.to} className={`nav-link ${isActive(item.to) ? "active" : ""}`} to={item.to}>
               {item.label}
             </Link>
           ))}
@@ -31,13 +28,24 @@ export function DashboardLayout({ auth, children }) {
       </aside>
       <section className="content">
         <header className="topbar">
-          <p>Merchant dashboard</p>
-          <button type="button" onClick={() => auth.setToken("")}>
-            Logout
+          <div className="topbar-title">
+            <strong>Loyalty Pro</strong>
+            <span className="muted">Commerçant</span>
+          </div>
+          <button type="button" className="secondary" onClick={() => auth.setToken("")}>
+            Deconnexion
           </button>
         </header>
         <main>{children}</main>
       </section>
+
+      <nav className="mobile-nav" aria-label="Navigation mobile">
+        {links.map((item) => (
+          <Link key={item.to} to={item.to} className={`mobile-nav-link ${isActive(item.to) ? "active" : ""}`}>
+            <span className="mobile-nav-label">{item.label}</span>
+          </Link>
+        ))}
+      </nav>
     </div>
   );
 }
