@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { API_BASE, apiRequest, openApplePass } from "../lib/api";
 import { decodeJwtPayload } from "../lib/jwtPayload";
 import { useToast } from "../components/ToastContext";
@@ -29,6 +30,11 @@ export function ClientsPage({ auth }) {
   const videoRef = useRef(null);
   const [scanOn, setScanOn] = useState(false);
   const mediaStreamRef = useRef(null);
+  const scanLockRef = useRef(false);
+  const [manualQrValue, setManualQrValue] = useState("");
+  const [walletDiagnostics, setWalletDiagnostics] = useState(null);
+  const [scanMessage, setScanMessage] = useState("Pret pour un scan caisse.");
+  const [lastScan, setLastScan] = useState(null);
   const { showToast } = useToast();
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((meta.total || 0) / (meta.limit || 10))), [meta]);
@@ -47,7 +53,7 @@ export function ClientsPage({ auth }) {
     }
   };
 
-  const loadClients = async () => {
+  const loadClients = useCallback(async () => {
     setIsLoading(true);
     const response = await apiRequest(
       `/clients?search=${encodeURIComponent(search)}&page=${page}&limit=10`,
@@ -56,7 +62,7 @@ export function ClientsPage({ auth }) {
     setClients(response.data || []);
     setMeta(response.meta || { total: 0, limit: 10 });
     setIsLoading(false);
-  };
+  }, [auth.token, page, search]);
 
   const loadClientHistory = async (client) => {
     setSelectedClient(client);
@@ -72,8 +78,39 @@ export function ClientsPage({ auth }) {
   };
 
   useEffect(() => {
-    loadClients().catch((error) => setStatus(error.message));
-  }, [search, page]);
+    let cancelled = false;
+
+    async function refreshClients() {
+      try {
+        await loadClients();
+      } catch (error) {
+        if (!cancelled) setStatus(error.message);
+      }
+    }
+
+    refreshClients();
+    return () => {
+      cancelled = true;
+    };
+  }, [loadClients]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadWalletDiagnostics() {
+      try {
+        const response = await apiRequest("/wallet/diagnostics", { token: auth.token });
+        if (!cancelled) setWalletDiagnostics(response.data);
+      } catch {
+        if (!cancelled) setWalletDiagnostics(null);
+      }
+    }
+
+    loadWalletDiagnostics();
+    return () => {
+      cancelled = true;
+    };
+  }, [auth.token]);
 
   const createClient = async (event) => {
     event.preventDefault();
@@ -116,6 +153,56 @@ export function ClientsPage({ auth }) {
       setIsBusy(false);
     }
   };
+
+  const parseQrPayload = useCallback((rawValue) => {
+    const value = String(rawValue || "").trim();
+    if (!value) {
+      throw new Error("QR vide ou illisible");
+    }
+
+    const parts = value.split(":");
+    if (parts.length < 2) {
+      throw new Error("Format QR invalide. Attendu : commerce:client:points");
+    }
+
+    const [merchantFromQr, clientId] = parts;
+    if (merchantId && merchantFromQr !== String(merchantId)) {
+      throw new Error("Ce QR appartient a un autre commerce");
+    }
+    return { merchantFromQr, clientId };
+  }, [merchantId]);
+
+  const stopScan = useCallback(() => {
+    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
+    mediaStreamRef.current = null;
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setScanOn(false);
+  }, []);
+
+  const handleQrPayload = useCallback(async (rawValue) => {
+    if (scanLockRef.current) return;
+    scanLockRef.current = true;
+    try {
+      const { clientId, merchantFromQr } = parseQrPayload(rawValue);
+      setScanMessage(`QR detecte pour le client ${clientId}. Attribution en cours...`);
+      await addPoint(clientId, "qr");
+      setLastScan({
+        merchantId: merchantFromQr,
+        clientId,
+        scannedAt: new Date().toISOString(),
+        rawValue
+      });
+      setScanMessage(`Point ajoute avec succes pour le client ${clientId}.`);
+      stopScan();
+      setManualQrValue("");
+    } catch (error) {
+      setStatus(error.message);
+      setScanMessage(error.message);
+      showToast(error.message, "error");
+    } finally {
+      scanLockRef.current = false;
+    }
+  }, [addPoint, parseQrPayload, showToast, stopScan]);
 
   const deleteClient = async (client) => {
     const confirmation = window.prompt(`Tape SUPPRIMER pour confirmer la suppression RGPD de ${client.full_name}`);
@@ -241,44 +328,54 @@ export function ClientsPage({ auth }) {
   };
 
   const startScan = async () => {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-    mediaStreamRef.current = stream;
-    if (videoRef.current) {
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      setScanOn(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      mediaStreamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play();
+        setScanOn(true);
+        setScanMessage("Camera active. Place le QR dans le cadre pour attribuer 1 point.");
+        showToast("Camera active. Presente le QR devant l'objectif.", "info");
+      }
+    } catch {
+      setScanMessage("Camera indisponible. Utilise la saisie manuelle du QR.");
+      showToast("Impossible d'acceder a la camera. Utilise la saisie manuelle ci-dessous.", "error");
     }
-  };
-
-  const stopScan = () => {
-    mediaStreamRef.current?.getTracks().forEach((track) => track.stop());
-    mediaStreamRef.current = null;
-    if (videoRef.current) videoRef.current.srcObject = null;
-    setScanOn(false);
-  };
-
-  const scanFrame = async () => {
-    if (!scanOn || !videoRef.current || !window.jsQR) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    ctx.drawImage(videoRef.current, 0, 0);
-    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const qr = window.jsQR(imgData.data, imgData.width, imgData.height);
-    if (qr?.data) {
-      const parts = qr.data.split(":");
-      const clientId = parts[1] || qr.data;
-      await addPoint(clientId, "qr");
-      stopScan();
-      return;
-    }
-    requestAnimationFrame(() => scanFrame().catch(() => null));
   };
 
   useEffect(() => {
-    if (scanOn) scanFrame().catch(() => null);
-  }, [scanOn]);
+    if (!scanOn) return undefined;
+
+    let cancelled = false;
+
+    async function scanLoop() {
+      if (cancelled || !videoRef.current || scanLockRef.current) return;
+      if (!videoRef.current.videoWidth || !videoRef.current.videoHeight) {
+        requestAnimationFrame(() => scanLoop().catch(() => null));
+        return;
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(videoRef.current, 0, 0);
+      const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const qr = jsQR(imgData.data, imgData.width, imgData.height);
+
+      if (qr?.data) {
+        await handleQrPayload(qr.data);
+        return;
+      }
+      requestAnimationFrame(() => scanLoop().catch(() => null));
+    }
+
+    scanLoop().catch(() => null);
+    return () => {
+      cancelled = true;
+    };
+  }, [handleQrPayload, scanOn]);
 
   return (
     <section className="stack">
@@ -429,16 +526,44 @@ export function ClientsPage({ auth }) {
       </article>
 
       <article className="card">
-        <h2>Attribution points (QR)</h2>
-        <video ref={videoRef} className="scanner" />
+        <h2>Attribution points (scan QR caisse)</h2>
+        <p className="muted">
+          Le QR doit etre scanne cote commerçant. Le client ne doit pas auto-crediter ses points avec sa propre carte.
+        </p>
+        <div className="scanner-shell">
+          <video ref={videoRef} className="scanner" />
+          <div className="scanner-overlay" aria-hidden="true">
+            <div className="scanner-frame"></div>
+          </div>
+        </div>
+        <p className={`scan-status ${scanOn ? "live" : ""}`}>{scanMessage}</p>
         <div className="row">
-          <button type="button" onClick={startScan}>
-            Demarrer scan
+          <button type="button" onClick={startScan} disabled={scanOn}>
+            {scanOn ? "Scan en cours..." : "Demarrer scan"}
           </button>
           <button type="button" className="secondary" onClick={stopScan}>
             Stop
           </button>
         </div>
+        <div className="row">
+          <input
+            placeholder="Coller ici un QR texte commerce:client:points"
+            value={manualQrValue}
+            onChange={(event) => setManualQrValue(event.target.value)}
+          />
+          <button type="button" className="secondary" onClick={() => handleQrPayload(manualQrValue)}>
+            Valider QR
+          </button>
+        </div>
+        {lastScan ? (
+          <div className="scan-result">
+            <strong>Dernier scan valide</strong>
+            <p>
+              Commerce {lastScan.merchantId} · Client {lastScan.clientId}
+            </p>
+            <p>{new Date(lastScan.scannedAt).toLocaleString("fr-FR")}</p>
+          </div>
+        ) : null}
       </article>
 
       <article className="card">
@@ -449,6 +574,10 @@ export function ClientsPage({ auth }) {
             {isExporting ? "Export..." : "Exporter CSV"}
           </button>
         </div>
+        <p className="muted">
+          Le bouton <code>Apple Pass</code> ouvre l'ajout Wallet pour ce client. Le bouton <code>Copier QR</code> sert au
+          generateur visuel et au futur scan caisse.
+        </p>
         {isLoading ? <div className="skeleton">Chargement des clients...</div> : null}
         <div className="table">
           {clients.map((client) => (
@@ -476,8 +605,18 @@ export function ClientsPage({ auth }) {
                 <button type="button" onClick={() => addPoint(client.id)}>
                   +1
                 </button>
-                <button type="button" className="secondary" onClick={() => openApplePass(auth.token, client.id)}>
-                  Apple Pass
+                <button
+                  type="button"
+                  className="secondary"
+                  disabled={!walletDiagnostics?.appleWallet?.ready}
+                  title={
+                    walletDiagnostics?.appleWallet?.ready
+                      ? "Ouvrir l'ajout Apple Wallet"
+                      : "Apple Wallet n'est pas encore configure sur le serveur"
+                  }
+                  onClick={() => openApplePass(auth.token, client.id)}
+                >
+                  {walletDiagnostics?.appleWallet?.ready ? "Ajouter a Apple Wallet" : "Apple Wallet indisponible"}
                 </button>
               </div>
             </div>
@@ -518,6 +657,22 @@ export function ClientsPage({ auth }) {
                     </button>
                   </div>
                 ) : null}
+                <p className="muted">
+                  Wallet : ajoute la carte depuis Loyalty Pro. Notifications : campagnes email aujourd'hui, push web dans
+                  un lot suivant.
+                </p>
+                <div className="row wrap">
+                  <button
+                    type="button"
+                    disabled={!walletDiagnostics?.appleWallet?.ready}
+                    onClick={() => openApplePass(auth.token, selectedClient.id)}
+                  >
+                    {walletDiagnostics?.appleWallet?.ready ? "Ajouter cette cliente a Apple Wallet" : "Configurer Apple Wallet"}
+                  </button>
+                  {!walletDiagnostics?.appleWallet?.ready ? (
+                    <span className="muted">Va dans l'onglet Wallet pour finir la configuration Apple.</span>
+                  ) : null}
+                </div>
               </div>
               <button type="button" className="danger" disabled={isBusy} onClick={() => deleteClient(selectedClient)}>
                 Supprimer (RGPD)

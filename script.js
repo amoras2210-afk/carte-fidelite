@@ -25,6 +25,20 @@
     etoiles: '★',
   };
 
+  const CARD_W = 720;
+  const CARD_H = 420;
+
+  /** Libellés FR pour la ligne de progression */
+  function programLabelFr(program) {
+    const map = { tampons: 'tampons', points: 'points', etoiles: 'étoiles' };
+    return map[program] || program;
+  }
+
+  function bitmapScale() {
+    const dpr = typeof window !== 'undefined' && window.devicePixelRatio ? window.devicePixelRatio : 1;
+    return Math.min(3, Math.max(2, dpr));
+  }
+
   /* ──────────────────────────────────────────
      DOM REFS
   ────────────────────────────────────────── */
@@ -109,14 +123,29 @@
   async function draw() {
     const s = getState();
     const t = s.theme;
-    const W = 720, H = 420;
-    canvas.width  = W;
-    canvas.height = H;
+    const W = CARD_W;
+    const H = CARD_H;
+    const scale = bitmapScale();
+    canvas.width = Math.round(W * scale);
+    canvas.height = Math.round(H * scale);
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
 
-    /* Background */
-    ctx.fillStyle = t.bg;
-    roundRect(ctx, 0, 0, W, H, 20);
+    /* Background — dégradé premium */
+    const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+    bgGrad.addColorStop(0, t.bg);
+    bgGrad.addColorStop(0.55, t.bg2 || t.bg);
+    bgGrad.addColorStop(1, t.bg);
+    ctx.fillStyle = bgGrad;
+    roundRect(ctx, 0, 0, W, H, 22);
     ctx.fill();
+
+    /* Contour carte fin */
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, 0.5, 0.5, W - 1, H - 1, 22);
+    ctx.stroke();
 
     /* Style-specific decorations */
     drawDecorations(s, W, H);
@@ -199,19 +228,19 @@
       ctx.drawImage(img, qrX, qrY, QR_SIZE, QR_SIZE);
     } catch {
       ctx.fillStyle = 'rgba(0,0,0,0.45)';
-      ctx.font = `600 11px 'DM Sans', sans-serif`;
+      ctx.font = `600 11px 'Plus Jakarta Sans', system-ui, sans-serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText('QR', qrX + QR_SIZE / 2, qrY + QR_SIZE / 2 - 6);
-      ctx.font = `300 9px 'DM Sans', sans-serif`;
+      ctx.font = `400 9px 'Plus Jakarta Sans', system-ui, sans-serif`;
       ctx.fillText('indispo', qrX + QR_SIZE / 2, qrY + QR_SIZE / 2 + 8);
     }
 
     ctx.fillStyle = t.text2;
-    ctx.font = `300 9px 'DM Sans', sans-serif`;
+    ctx.font = `400 9px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText('Scanner caisse', qrX + QR_SIZE / 2, qrY + QR_SIZE + 6);
+    ctx.fillText('Lecture terminal', qrX + QR_SIZE / 2, qrY + QR_SIZE + 6);
   }
 
   function drawDecorations(s, W, H) {
@@ -308,33 +337,33 @@
     /* Tagline */
     if (s.tagline) {
       ctx.fillStyle = t.text2;
-      ctx.font = `300 13px 'DM Sans', sans-serif`;
+      ctx.font = `400 13px 'Plus Jakarta Sans', system-ui, sans-serif`;
       ctx.fillText(truncate(s.tagline, 38), logoX + logoSize + 14, logoY + nameSize + 18);
     }
 
-    /* Card type badge */
-    const badge = STAMP_ICONS[s.program] + ' Carte fidélité';
-    ctx.font = `500 11px 'DM Sans', sans-serif`;
-    const bw = ctx.measureText(badge).width + 20;
-    const bx = W - bw - 28, by = 28;
+    /* Badge programme */
+    const badge = 'FIDÉLITÉ · ' + STAMP_ICONS[s.program];
+    ctx.font = `600 9px 'Plus Jakarta Sans', system-ui, sans-serif`;
+    const bw = ctx.measureText(badge).width + 22;
+    const bx = W - bw - 28, by = 26;
 
     ctx.fillStyle = t.accent;
     ctx.globalAlpha = 0.12;
-    roundRect(ctx, bx, by, bw, 24, 12);
+    roundRect(ctx, bx, by, bw, 26, 13);
     ctx.fill();
     ctx.globalAlpha = 1;
 
     ctx.strokeStyle = t.accent;
     ctx.lineWidth = 0.8;
     ctx.globalAlpha = 0.4;
-    roundRect(ctx, bx, by, bw, 24, 12);
+    roundRect(ctx, bx, by, bw, 26, 13);
     ctx.stroke();
     ctx.globalAlpha = 1;
 
     ctx.fillStyle = t.accent;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(badge, bx + bw / 2, by + 12);
+    ctx.fillText(badge, bx + bw / 2, by + 13);
   }
 
   function drawProgress(s, W, H, t) {
@@ -342,29 +371,32 @@
 
     /* Points label */
     ctx.fillStyle = t.text2;
-    ctx.font = `400 12px 'DM Sans', sans-serif`;
+    ctx.font = `500 11px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(`${s.current} / ${s.total} ${s.program}`, 36, y);
+    ctx.fillText(`${s.current} / ${s.total} ${programLabelFr(s.program)}`, 36, y);
 
     /* Percentage */
     const pct = Math.round((s.current / s.total) * 100);
     ctx.fillStyle = t.accent;
-    ctx.font = `500 12px 'DM Sans', sans-serif`;
+    ctx.font = `600 11px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.textAlign = 'right';
     ctx.fillText(`${pct}%`, W - 36, y);
 
     /* Track */
-    const barX = 36, barY = y + 8, barW = W - 72, barH = 4;
+    const barX = 36, barY = y + 10, barW = W - 72, barH = 6;
     ctx.fillStyle = t.stamp;
-    roundRect(ctx, barX, barY, barW, barH, 2);
+    roundRect(ctx, barX, barY, barW, barH, 3);
     ctx.fill();
 
-    /* Fill */
+    /* Fill — léger dégradé */
     if (s.current > 0) {
-      const fillW = (s.current / s.total) * barW;
-      ctx.fillStyle = t.accent;
-      roundRect(ctx, barX, barY, fillW, barH, 2);
+      const fillW = Math.max(6, (s.current / s.total) * barW);
+      const fillGrad = ctx.createLinearGradient(barX, barY, barX + fillW, barY);
+      fillGrad.addColorStop(0, t.accent2 || t.accent);
+      fillGrad.addColorStop(1, t.accent);
+      ctx.fillStyle = fillGrad;
+      roundRect(ctx, barX, barY, fillW, barH, 3);
       ctx.fill();
     }
   }
@@ -401,17 +433,17 @@
 
       if (!filled) {
         ctx.strokeStyle = t.accent;
-        ctx.lineWidth = 0.8;
-        ctx.globalAlpha = 0.25;
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.22;
         ctx.beginPath();
-        ctx.arc(x + size / 2, y + size / 2, size / 2, 0, Math.PI * 2);
+        ctx.arc(x + size / 2, y + size / 2, size / 2 - 0.5, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1;
       }
 
       ctx.fillStyle = filled ? t.bg : t.accent;
-      ctx.globalAlpha = filled ? 0.9 : 0.25;
-      ctx.font = `${size * 0.44}px serif`;
+      ctx.globalAlpha = filled ? 0.92 : 0.28;
+      ctx.font = `${size * 0.44}px Georgia, serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(icon, x + size / 2, y + size / 2);
@@ -435,24 +467,24 @@
     ctx.globalAlpha = 1;
 
     ctx.fillStyle = t.text2;
-    ctx.font = `400 11px 'DM Sans', sans-serif`;
+    ctx.font = `600 10px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillText(truncate(s.cardHolder.toUpperCase(), 26), 36, y - 6);
 
-    let expLabel = 'Carte démo';
+    let expLabel = 'Démonstration';
     if (s.expiry) {
       const d = new Date(s.expiry);
-      expLabel = 'Exp. ' + d.toLocaleDateString('fr-FR', { month: '2-digit', year: '2-digit' });
+      expLabel = 'Valable jusqu’au ' + d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
     }
-    ctx.font = `300 10px 'DM Sans', sans-serif`;
+    ctx.font = `400 10px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.fillText(expLabel, 36, y + 10);
 
     ctx.fillStyle = t.accent;
-    ctx.font = `500 11px 'DM Sans', sans-serif`;
+    ctx.font = `600 10px 'Plus Jakarta Sans', system-ui, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('Récompense : ' + truncate(s.rewardText, 24), W / 2, y + 2);
+    ctx.fillText(truncate(s.rewardText, 28), W / 2, y + 2);
   }
 
   function roundRect(c, x, y, w, h, r) {
@@ -508,7 +540,7 @@
     }
 
     if (s.current >= s.total) {
-      $('rewardAlertText').textContent = `🎁 ${s.rewardText}`;
+      $('rewardAlertText').textContent = `Récompense atteinte : ${s.rewardText}`;
       alert.style.display = 'flex';
     } else {
       alert.style.display = 'none';
@@ -521,8 +553,12 @@
   $('themeGrid').addEventListener('click', e => {
     const btn = e.target.closest('.theme-swatch');
     if (!btn) return;
-    document.querySelectorAll('.theme-swatch').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.theme-swatch').forEach((b) => {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
     btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
     currentTheme = btn.dataset.theme;
     $('customColorFields').style.display = currentTheme === 'custom' ? 'block' : 'none';
     draw();
@@ -532,11 +568,16 @@
      TOGGLE GROUPS
   ────────────────────────────────────────── */
   function bindToggleGroup(groupId, onChange) {
-    $(`${groupId}`).addEventListener('click', e => {
+    const group = $(`${groupId}`);
+    group.addEventListener('click', e => {
       const btn = e.target.closest('.toggle-btn');
       if (!btn) return;
-      $(`${groupId}`).querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+      group.querySelectorAll('.toggle-btn').forEach((b) => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+      });
       btn.classList.add('active');
+      btn.setAttribute('aria-pressed', 'true');
       onChange(btn.dataset.value);
     });
   }
@@ -584,9 +625,9 @@
     const name = (inputs.shopName.value || 'carte').toLowerCase().replace(/\s+/g, '-');
     const link = document.createElement('a');
     link.download = `carte-fidelite-${name}.png`;
-    link.href = canvas.toDataURL('image/png');
+    link.href = canvas.toDataURL('image/png', 1);
     link.click();
-    toast('Carte téléchargée !');
+    toast('Export PNG enregistré.');
   });
 
   /* ──────────────────────────────────────────
@@ -595,7 +636,7 @@
   $('btnCopyCSS').addEventListener('click', () => {
     const t = getTheme();
     const css = `/* Palette ${currentTheme} */\n--card-bg: ${t.bg};\n--card-accent: ${t.accent};\n--card-text: ${t.text};`;
-    navigator.clipboard.writeText(css).then(() => toast('Couleurs copiées dans le presse-papier !')).catch(() => toast('Impossible de copier'));
+    navigator.clipboard.writeText(css).then(() => toast('Variables CSS copiées.')).catch(() => toast('Copie impossible.'));
   });
 
   /* ──────────────────────────────────────────
@@ -615,7 +656,7 @@
     notif.offsetHeight;
     notif.style.animation = '';
 
-    toast('Notification prévisualisée !');
+    toast('Maquette affichée.');
   });
 
   /* Auto-update push body with current points */
@@ -623,7 +664,7 @@
     const s = getState();
     const remaining = s.total - s.current;
     if (remaining > 0) {
-      inputs.pushBody.value = `Vous avez cumulé ${s.current} ${s.program}. Plus que ${remaining} pour obtenir votre récompense !`;
+      inputs.pushBody.value = `Vous avez cumulé ${s.current} ${programLabelFr(s.program)}. Plus que ${remaining} pour obtenir votre récompense.`;
     } else {
       inputs.pushBody.value = `Félicitations ! Votre récompense "${s.rewardText}" est disponible.`;
     }
@@ -654,6 +695,10 @@
   const today = new Date();
   const nextYear = new Date(today.getFullYear() + 1, today.getMonth(), today.getDate());
   inputs.expiryDate.value = nextYear.toISOString().split('T')[0];
+
+  canvas.style.width = `${CARD_W}px`;
+  canvas.style.maxWidth = '100%';
+  canvas.style.height = 'auto';
 
   draw().catch((err) => console.error(err));
 

@@ -1,3 +1,5 @@
+const fs = require("fs");
+const path = require("path");
 const db = require("../config/db");
 const ApiError = require("../utils/ApiError");
 const env = require("../config/env");
@@ -50,20 +52,52 @@ async function getGoogleWalletPayload(req, res, next) {
 
 async function walletDiagnostics(req, res, next) {
   try {
-    const hasAppleCertificates =
-      Boolean(process.env.APPLE_WALLET_WWDR_PATH) &&
-      Boolean(process.env.APPLE_WALLET_SIGNER_CERT_PATH) &&
-      Boolean(process.env.APPLE_WALLET_SIGNER_KEY_PATH);
+    const appleFiles = [
+      { key: "wwdr", label: "WWDR certificate", value: env.appleWalletWWDRPath },
+      { key: "signerCert", label: "Signer certificate", value: env.appleWalletSignerCertPath },
+      { key: "signerKey", label: "Signer private key", value: env.appleWalletSignerKeyPath }
+    ].map((item) => {
+      const resolvedPath = item.value ? path.resolve(process.cwd(), item.value) : null;
+      return {
+        key: item.key,
+        label: item.label,
+        configured: Boolean(item.value),
+        exists: resolvedPath ? fs.existsSync(resolvedPath) : false
+      };
+    });
+
+    const appleMissingItems = appleFiles.filter((item) => !item.configured || !item.exists).map((item) => item.label);
+    const hasAppleCertificates = appleMissingItems.length === 0;
+    const hasRealPassType =
+      Boolean(env.appleWalletPassTypeIdentifier) && env.appleWalletPassTypeIdentifier !== "pass.com.yourcompany.loyalty";
+    const hasRealTeamId =
+      Boolean(env.appleWalletTeamIdentifier) && env.appleWalletTeamIdentifier !== "YOUR_TEAM_IDENTIFIER";
+    const appleReady = hasAppleCertificates && hasRealPassType && hasRealTeamId;
+    if (!hasRealPassType) appleMissingItems.push("Pass Type Identifier");
+    if (!hasRealTeamId) appleMissingItems.push("Apple Team Identifier");
+    const googleConfigured = Boolean(env.googleWalletIssuerId);
 
     return sendSuccess(res, {
       data: {
         appleWallet: {
-          configured: hasAppleCertificates
+          configured: hasAppleCertificates,
+          ready: appleReady,
+          passTypeIdentifier: env.appleWalletPassTypeIdentifier,
+          teamIdentifier: env.appleWalletTeamIdentifier,
+          missingItems: appleMissingItems,
+          files: appleFiles,
+          message: appleReady
+            ? "Apple Wallet prêt pour générer des passes."
+            : "Apple Wallet nécessite les certificats et identifiants Apple en production."
         },
         googleWallet: {
-          configured: Boolean(env.googleWalletIssuerId),
+          configured: googleConfigured,
           issuerId: env.googleWalletIssuerId || "missing",
-          mode: env.googleWalletIssuerId ? "ready_for_signing" : "template_payload"
+          classSuffix: env.googleWalletClassSuffix,
+          mode: googleConfigured ? "ready_for_signing" : "template_payload",
+          message: googleConfigured
+            ? "Google Wallet a un issuer configuré. La signature finale reste à brancher selon votre compte Google."
+            : "Google Wallet est actuellement en mode gabarit/payload, sans issuer de production."
         }
       }
     });
