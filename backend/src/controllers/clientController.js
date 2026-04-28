@@ -4,6 +4,7 @@ const db = require("../config/db");
 const ApiError = require("../utils/ApiError");
 const { buildRewardState } = require("../services/loyaltyService");
 const { sendRewardUnlockedEmail } = require("../services/notificationService");
+const { scheduleFirstVisitReviewNotification } = require("../services/reviewNotificationWorker");
 const { logAuditEvent } = require("../services/auditService");
 const { sendSuccess } = require("../utils/httpResponse");
 const { parsePagination } = require("../utils/pagination");
@@ -110,7 +111,7 @@ async function addPoints(req, res, next) {
       throw new ApiError(404, "Client not found", null, "CLIENT_NOT_FOUND");
     }
     const rewardThreshold = settingsResult.rows[0]?.reward_threshold || 10;
-    const merchantResult = await db.query("SELECT business_name FROM merchants WHERE id = $1", [merchantId]);
+    const merchantResult = await db.query("SELECT business_name, review_url FROM merchants WHERE id = $1", [merchantId]);
 
     const previousState = buildRewardState(client.points, rewardThreshold);
     const shouldIncreaseVisit = payload.channel === "qr";
@@ -146,6 +147,17 @@ async function addPoints(req, res, next) {
             rewardsEarned: newState.rewardsEarned
           })
         : { delivered: false, reason: "no_reward_or_no_email" };
+    const reviewNotificationResult =
+      shouldIncreaseVisit && newVisits === 1
+        ? await scheduleFirstVisitReviewNotification({
+            merchantId,
+            clientId: client.id,
+            merchantName: merchantResult.rows[0]?.business_name || "Votre commerce",
+            clientEmail: client.email,
+            clientName: client.full_name,
+            reviewUrl: merchantResult.rows[0]?.review_url || ""
+          })
+        : { scheduled: false, reason: "not_first_qr_visit" };
 
     return sendSuccess(res, {
       data: {
@@ -153,6 +165,7 @@ async function addPoints(req, res, next) {
         rewardUnlocked,
         rewardState: newState,
         notification: emailResult,
+        reviewNotification: reviewNotificationResult,
         message: rewardUnlocked
           ? "Reward unlocked. Email notification processed."
           : shouldIncreaseVisit

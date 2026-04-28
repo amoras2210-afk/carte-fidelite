@@ -19,6 +19,8 @@ const env = {
   smtpUser: process.env.SMTP_USER || "",
   smtpPass: process.env.SMTP_PASS || "",
   smtpFrom: process.env.SMTP_FROM || "no-reply@loyalty.local",
+  reviewRequestDelayMinutes: Number(process.env.REVIEW_REQUEST_DELAY_MINUTES || 10),
+  reviewDefaultUrl: process.env.REVIEW_DEFAULT_URL || "",
   appleWalletPassphrase: process.env.APPLE_WALLET_PASSPHRASE || "",
   appleWalletWWDRPath: process.env.APPLE_WALLET_WWDR_PATH || "",
   appleWalletSignerCertPath: process.env.APPLE_WALLET_SIGNER_CERT_PATH || "",

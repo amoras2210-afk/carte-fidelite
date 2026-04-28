@@ -41,7 +41,28 @@ async function sendCampaignEmail({ merchantName, clientEmail, clientName, title,
   return { delivered: true };
 }
 
+async function sendReviewRequestEmail({ merchantName, clientEmail, clientName, reviewUrl }) {
+  if (!transporter || !clientEmail) {
+    return { delivered: false, reason: "smtp_not_configured_or_missing_email" };
+  }
+
+  const safeReviewUrl = reviewUrl || "https://www.google.com/maps";
+  await transporter.sendMail({
+    from: env.smtpFrom,
+    to: clientEmail,
+    subject: `${merchantName} - Votre avis compte`,
+    text:
+      `Bonjour ${clientName},\n\n` +
+      "Merci pour votre visite. Si vous avez 30 secondes, pouvez-vous nous laisser un avis ?\n\n" +
+      `${safeReviewUrl}\n\n` +
+      "Merci !"
+  });
+
+  return { delivered: true };
+}
+
 module.exports = {
   sendRewardUnlockedEmail,
-  sendCampaignEmail
+  sendCampaignEmail,
+  sendReviewRequestEmail
 };
