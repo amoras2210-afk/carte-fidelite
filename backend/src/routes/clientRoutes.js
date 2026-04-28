@@ -8,7 +8,8 @@ const {
   deleteClient,
   exportClientsCsv,
   previewImport,
-  commitImport
+  commitImport,
+  createClientCardToken
 } = require("../controllers/clientController");
 
 const router = Router();
@@ -20,6 +21,7 @@ router.post("/import/commit", commitImport);
 router.get("/", listClients);
 router.post("/", createClient);
 router.post("/:clientId/points", addPoints);
+router.post("/:clientId/card-token", createClientCardToken);
 router.get("/:clientId/history", getClientHistory);
 router.delete("/:clientId", deleteClient);
 

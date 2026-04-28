@@ -35,6 +35,7 @@ export function ClientsPage({ auth }) {
   const [walletDiagnostics, setWalletDiagnostics] = useState(null);
   const [scanMessage, setScanMessage] = useState("Pret pour un scan caisse.");
   const [lastScan, setLastScan] = useState(null);
+  const [publicCardLink, setPublicCardLink] = useState("");
   const { showToast } = useToast();
 
   const totalPages = useMemo(() => Math.max(1, Math.ceil((meta.total || 0) / (meta.limit || 10))), [meta]);
@@ -66,6 +67,7 @@ export function ClientsPage({ auth }) {
 
   const loadClientHistory = async (client) => {
     setSelectedClient(client);
+    setPublicCardLink("");
     setIsHistoryLoading(true);
     try {
       const response = await apiRequest(`/clients/${client.id}/history`, { token: auth.token });
@@ -223,6 +225,27 @@ export function ClientsPage({ auth }) {
       showToast(error.message, "error");
     } finally {
       setIsBusy(false);
+    }
+  };
+
+  const buildPublicCardUrl = (cardToken) => {
+    if (!cardToken) return "";
+    if (typeof window === "undefined") return "";
+    return `${window.location.origin}/card?token=${encodeURIComponent(cardToken)}`;
+  };
+
+  const loadPublicCardLink = async (client) => {
+    try {
+      const response = await apiRequest(`/clients/${client.id}/card-token`, {
+        token: auth.token,
+        method: "POST"
+      });
+      const url = buildPublicCardUrl(response.data.token);
+      setPublicCardLink(url);
+      await navigator.clipboard.writeText(url);
+      showToast("Lien carte copié (gratuit)", "success");
+    } catch (error) {
+      showToast(error.message, "error");
     }
   };
 
@@ -672,6 +695,24 @@ export function ClientsPage({ auth }) {
                   {!walletDiagnostics?.appleWallet?.ready ? (
                     <span className="muted">Va dans l'onglet Wallet pour finir la configuration Apple.</span>
                   ) : null}
+                </div>
+                <div className="card inner">
+                  <strong>Option gratuite (sans Apple Wallet)</strong>
+                  <p className="muted">
+                    Genere un lien carte pour le client. Sur iPhone/Android, le client peut l'ajouter a l'ecran d'accueil
+                    (PWA).
+                  </p>
+                  <div className="row wrap">
+                    <button type="button" className="secondary" onClick={() => loadPublicCardLink(selectedClient)}>
+                      Copier lien carte (PWA)
+                    </button>
+                    {publicCardLink ? (
+                      <a className="link-btn" href={publicCardLink} target="_blank" rel="noreferrer">
+                        Ouvrir
+                      </a>
+                    ) : null}
+                  </div>
+                  {publicCardLink ? <p className="muted mono">{publicCardLink}</p> : null}
                 </div>
               </div>
               <button type="button" className="danger" disabled={isBusy} onClick={() => deleteClient(selectedClient)}>

@@ -7,6 +7,7 @@ const { sendRewardUnlockedEmail } = require("../services/notificationService");
 const { logAuditEvent } = require("../services/auditService");
 const { sendSuccess } = require("../utils/httpResponse");
 const { parsePagination } = require("../utils/pagination");
+const { signCardToken } = require("../utils/cardToken");
 
 const createClientSchema = z.object({
   fullName: z.string().min(2),
@@ -388,6 +389,27 @@ async function exportClientsCsv(req, res, next) {
   }
 }
 
+async function createClientCardToken(req, res, next) {
+  try {
+    const merchantId = req.auth.merchantId;
+    const clientId = req.params.clientId;
+
+    const result = await db.query("SELECT id FROM clients WHERE id = $1 AND merchant_id = $2", [clientId, merchantId]);
+    if (!result.rows[0]) {
+      throw new ApiError(404, "Client not found", null, "CLIENT_NOT_FOUND");
+    }
+
+    const token = signCardToken({ merchantId, clientId });
+    return sendSuccess(res, {
+      data: {
+        token
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   listClients,
   createClient,
@@ -396,5 +418,6 @@ module.exports = {
   deleteClient,
   exportClientsCsv,
   previewImport,
-  commitImport
+  commitImport,
+  createClientCardToken
 };

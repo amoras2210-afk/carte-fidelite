@@ -359,6 +359,95 @@ pre {
   line-height: 1.1;
 }
 
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+/* Public card (PWA) */
+.public-shell {
+  min-height: 100vh;
+  background: #0b1220;
+  color: #e2e8f0;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 14px;
+  gap: 12px;
+}
+
+.public-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.public-brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+
+.public-card {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.public-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.public-title {
+  margin: 0;
+  font-size: 22px;
+  color: #fff;
+}
+
+.public-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(37, 99, 235, 0.22);
+  color: #bfdbfe;
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  white-space: nowrap;
+}
+
+.public-qr {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.public-qr img {
+  border-radius: 14px;
+  background: #fff;
+  padding: 10px;
+}
+
+.public-foot {
+  text-align: center;
+  opacity: 0.85;
+}
+
 .wallet-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

@@ -9,6 +9,7 @@ const campaignRoutes = require("./routes/campaignRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const onboardingRoutes = require("./routes/onboardingRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const requestLogger = require("./middleware/requestLogger");
 const { sendSuccess } = require("./utils/httpResponse");
@@ -34,6 +35,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/analytics", analyticsRoutes);
+app.use("/api/public", publicRoutes);
 
 app.use(errorHandler);
 
