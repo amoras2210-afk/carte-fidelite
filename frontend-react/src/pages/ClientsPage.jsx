@@ -403,325 +403,196 @@ export function ClientsPage({ auth }) {
   return (
     <section className="stack">
       <article className="card">
-        <h2>Import CSV</h2>
-        <p className="muted">Colonnes detectees automatiquement. Nom + email ou telephone obligatoires par ligne.</p>
-        <input type="file" accept=".csv,text/csv" onChange={handleCsvFile} />
-        <label className="consent">
-          <input type="checkbox" checked={hasHeader} onChange={(event) => setHasHeader(event.target.checked)} />
-          La premiere ligne contient les en-tetes
-        </label>
-        <div className="row">
-          <button type="button" className="secondary" disabled={importBusy} onClick={runImportPreview}>
-            Previsualiser
-          </button>
-          <button type="button" disabled={importBusy || !importPreview} onClick={commitImport}>
-            Importer
-          </button>
-        </div>
-        {importPreview && importPreview.columns?.length ? (
-          <div className="import-mapping">
-            <div className="row wrap">
-              <label>
-                Nom
-                <select
-                  value={importMapping.fullName}
-                  onChange={(event) => setImportMapping((prev) => ({ ...prev, fullName: event.target.value }))}
-                >
-                  {importPreview.columns.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Email
-                <select
-                  value={importMapping.email}
-                  onChange={(event) => setImportMapping((prev) => ({ ...prev, email: event.target.value }))}
-                >
-                  <option value="__skip__">Ignorer</option>
-                  {importPreview.columns.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Telephone
-                <select
-                  value={importMapping.phone}
-                  onChange={(event) => setImportMapping((prev) => ({ ...prev, phone: event.target.value }))}
-                >
-                  <option value="__skip__">Ignorer</option>
-                  {importPreview.columns.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Consentement marketing
-                <select
-                  value={importMapping.consentMarketing}
-                  onChange={(event) =>
-                    setImportMapping((prev) => ({ ...prev, consentMarketing: event.target.value }))
-                  }
-                >
-                  <option value="__skip__">Ignorer</option>
-                  {importPreview.columns.map((col) => (
-                    <option key={col} value={col}>
-                      {col}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            <p className="muted">{importPreview.totalRows} lignes au total · apercu:</p>
-            <div className="table compact">
-              {importPreview.previewRows.slice(0, 5).map((row, index) => (
-                <div className="row item" key={`preview-${index}`}>
-                  <span>{typeof row === "object" ? JSON.stringify(row) : row.join(", ")}</span>
-                </div>
-              ))}
-            </div>
+        <div className="row spread wrap">
+          <div>
+            <h2>Clients</h2>
+            <p className="muted">Ajoute un client, scanne sa carte puis ouvre sa fiche. Les outils avancés sont rangés plus bas.</p>
           </div>
-        ) : importPreview ? (
-          <p className="muted">Impossible de detecter les colonnes. Verifie le separateur ou les en-tetes.</p>
-        ) : null}
+          {status ? <span className="badge info-badge">{status}</span> : null}
+        </div>
+        <div className="grid clients-summary-grid">
+          <article className="card inner stat">
+            <h3>Total clients</h3>
+            <strong>{meta.total || clients.length}</strong>
+          </article>
+          <article className="card inner stat">
+            <h3>Points affichés</h3>
+            <strong>{clients.reduce((sum, client) => sum + (client.points || 0), 0)}</strong>
+          </article>
+          <article className="card inner stat">
+            <h3>Visites affichées</h3>
+            <strong>{clients.reduce((sum, client) => sum + (client.visits || 0), 0)}</strong>
+          </article>
+        </div>
       </article>
 
-      <article className="card">
-        <h2>Carte visuelle / QR (FidelioGen)</h2>
-        <p className="muted">
-          Pour lier ta carte au scan caisse : dans le générateur, colle <strong>ID commerce</strong> et{" "}
-          <strong>ID client</strong> ci-dessous (format scan : commerce:client:points).
-        </p>
-        {merchantId ? (
-          <div className="row wrap align-start">
-            <label className="grow">
-              ID commerce
-              <input readOnly value={merchantId} className="mono" />
+      <section className="clients-primary-grid">
+        <article className="card">
+          <h2>Ajouter un client</h2>
+          <form className="form" onSubmit={createClient}>
+            <input
+              placeholder="Nom complet"
+              value={form.fullName}
+              onChange={(event) => setForm((prev) => ({ ...prev, fullName: event.target.value }))}
+              required
+            />
+            <div className="row wrap">
+              <input
+                className="grow"
+                placeholder="Telephone"
+                value={form.phone}
+                onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
+              />
+              <input
+                className="grow"
+                placeholder="Email"
+                type="email"
+                value={form.email}
+                onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
+              />
+            </div>
+            <label className="consent">
+              <input
+                type="checkbox"
+                checked={form.consentMarketing}
+                onChange={(event) => setForm((prev) => ({ ...prev, consentMarketing: event.target.checked }))}
+              />
+              Consentement marketing RGPD
             </label>
-            <button type="button" className="secondary self-end" onClick={() => copyText(merchantId, "ID commerce copie")}>
-              Copier commerce
+            <button type="submit" disabled={isBusy}>
+              {isBusy ? "Traitement..." : "Ajouter client"}
+            </button>
+          </form>
+        </article>
+
+        <article className="card">
+          <h2>Scanner une carte</h2>
+          <p className="muted">Le commerçant scanne le QR pour ajouter automatiquement 1 point.</p>
+          <div className="scanner-shell">
+            <video ref={videoRef} className="scanner" />
+            <div className="scanner-overlay" aria-hidden="true">
+              <div className="scanner-frame"></div>
+            </div>
+          </div>
+          <p className={`scan-status ${scanOn ? "live" : ""}`}>{scanMessage}</p>
+          <div className="row">
+            <button type="button" onClick={startScan} disabled={scanOn}>
+              {scanOn ? "Scan en cours..." : "Scanner maintenant"}
+            </button>
+            <button type="button" className="secondary" onClick={stopScan}>
+              Stop
             </button>
           </div>
-        ) : (
-          <p className="muted">Reconnecte-toi pour afficher ton ID commerce.</p>
-        )}
-      </article>
-
-      <article className="card">
-        <h2>Nouveau client</h2>
-        <form className="form" onSubmit={createClient}>
-          <input
-            placeholder="Nom complet"
-            value={form.fullName}
-            onChange={(event) => setForm((prev) => ({ ...prev, fullName: event.target.value }))}
-            required
-          />
-          <input
-            placeholder="Telephone"
-            value={form.phone}
-            onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
-          />
-          <input
-            placeholder="Email"
-            type="email"
-            value={form.email}
-            onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))}
-          />
-          <label className="consent">
+          <div className="row">
             <input
-              type="checkbox"
-              checked={form.consentMarketing}
-              onChange={(event) => setForm((prev) => ({ ...prev, consentMarketing: event.target.checked }))}
+              placeholder="Coller un QR texte"
+              value={manualQrValue}
+              onChange={(event) => setManualQrValue(event.target.value)}
             />
-            Consentement marketing RGPD
-          </label>
-          <button type="submit" disabled={isBusy}>
-            {isBusy ? "Traitement..." : "Ajouter client"}
-          </button>
-        </form>
-      </article>
-
-      <article className="card">
-        <h2>Attribution points (scan QR caisse)</h2>
-        <p className="muted">
-          Le QR doit etre scanne cote commerçant. Le client ne doit pas auto-crediter ses points avec sa propre carte.
-        </p>
-        <div className="scanner-shell">
-          <video ref={videoRef} className="scanner" />
-          <div className="scanner-overlay" aria-hidden="true">
-            <div className="scanner-frame"></div>
+            <button type="button" className="secondary" onClick={() => handleQrPayload(manualQrValue)}>
+              Valider
+            </button>
           </div>
-        </div>
-        <p className={`scan-status ${scanOn ? "live" : ""}`}>{scanMessage}</p>
-        <div className="row">
-          <button type="button" onClick={startScan} disabled={scanOn}>
-            {scanOn ? "Scan en cours..." : "Demarrer scan"}
-          </button>
-          <button type="button" className="secondary" onClick={stopScan}>
-            Stop
-          </button>
-        </div>
-        <div className="row">
-          <input
-            placeholder="Coller ici un QR texte commerce:client:points"
-            value={manualQrValue}
-            onChange={(event) => setManualQrValue(event.target.value)}
-          />
-          <button type="button" className="secondary" onClick={() => handleQrPayload(manualQrValue)}>
-            Valider QR
-          </button>
-        </div>
-        {lastScan ? (
-          <div className="scan-result">
-            <strong>Dernier scan valide</strong>
-            <p>
-              Commerce {lastScan.merchantId} · Client {lastScan.clientId}
-            </p>
-            <p>{new Date(lastScan.scannedAt).toLocaleString("fr-FR")}</p>
-          </div>
-        ) : null}
-      </article>
-
-      <article className="card">
-        <div className="row">
-          <h2>Clients</h2>
-          <input placeholder="Rechercher..." value={search} onChange={(event) => setSearch(event.target.value)} />
-          <button type="button" className="secondary" onClick={exportCsv} disabled={isExporting}>
-            {isExporting ? "Export..." : "Exporter CSV"}
-          </button>
-        </div>
-        <p className="muted">
-          Le bouton <code>Apple Pass</code> ouvre l'ajout Wallet pour ce client. Le bouton <code>Copier QR</code> sert au
-          generateur visuel et au futur scan caisse.
-        </p>
-        {isLoading ? <div className="skeleton">Chargement des clients...</div> : null}
-        <div className="table">
-          {clients.map((client) => (
-            <div className="row item" key={client.id}>
-              <div>
-                <strong>{client.full_name}</strong>
-                <p>
-                  {client.email || client.phone || "-"} · {client.visits || 0} visites · {client.points} pts ·{" "}
-                  {client.reward_state.rewardsEarned} rewards
-                </p>
-              </div>
-              <div className="row">
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!qrPayloadForClient(client)}
-                  title="Copie commerce:client:points pour QR FidelioGen"
-                  onClick={() => copyText(qrPayloadForClient(client), "Texte QR copie")}
-                >
-                  Copier QR
-                </button>
-                <button type="button" className="secondary" onClick={() => loadClientHistory(client)}>
-                  Detail
-                </button>
-                <button type="button" onClick={() => addPoint(client.id)}>
-                  +1
-                </button>
-                <button
-                  type="button"
-                  className="secondary"
-                  disabled={!walletDiagnostics?.appleWallet?.ready}
-                  title={
-                    walletDiagnostics?.appleWallet?.ready
-                      ? "Ouvrir l'ajout Apple Wallet"
-                      : "Apple Wallet n'est pas encore configure sur le serveur"
-                  }
-                  onClick={() => openApplePass(auth.token, client.id)}
-                >
-                  {walletDiagnostics?.appleWallet?.ready ? "Ajouter a Apple Wallet" : "Apple Wallet indisponible"}
-                </button>
-              </div>
+          {lastScan ? (
+            <div className="scan-result">
+              <strong>Dernier scan valide</strong>
+              <p>
+                Commerce {lastScan.merchantId} · Client {lastScan.clientId}
+              </p>
+              <p>{new Date(lastScan.scannedAt).toLocaleString("fr-FR")}</p>
             </div>
+          ) : null}
+        </article>
+      </section>
+
+      <article className="card">
+        <div className="row spread wrap">
+          <h2>Liste des clients</h2>
+          <div className="row wrap">
+            <input placeholder="Rechercher..." value={search} onChange={(event) => setSearch(event.target.value)} />
+            <button type="button" className="secondary" onClick={exportCsv} disabled={isExporting}>
+              {isExporting ? "Export..." : "Exporter CSV"}
+            </button>
+          </div>
+        </div>
+        {isLoading ? <div className="skeleton">Chargement des clients...</div> : null}
+        <div className="table client-list-simple">
+          {clients.map((client) => (
+            <button type="button" className="client-row-card" key={client.id} onClick={() => loadClientHistory(client)}>
+              <div className="client-row-main">
+                <strong>{client.full_name}</strong>
+                <p>{client.email || client.phone || "Aucun contact"}</p>
+              </div>
+              <div className="client-row-meta">
+                <span>{client.points} pts</span>
+                <span>{client.visits || 0} visites</span>
+              </div>
+            </button>
           ))}
         </div>
-        <div className="row">
-          <button type="button" onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
-            Prev
-          </button>
-          <p>
+        <div className="row spread wrap">
+          <p className="muted">
             Page {page}/{totalPages}
           </p>
-          <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}>
-            Next
-          </button>
+          <div className="row">
+            <button type="button" className="secondary" onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
+              Prev
+            </button>
+            <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}>
+              Next
+            </button>
+          </div>
         </div>
       </article>
+
       <article className="card">
         <h2>Fiche client</h2>
         {!selectedClient ? (
-          <p>Selectionne un client pour voir son historique.</p>
+          <p className="muted">Choisis un client dans la liste pour voir ses actions utiles.</p>
         ) : (
           <>
             <div className="detail-header">
               <div>
                 <strong>{selectedClient.full_name}</strong>
                 <p>{selectedClient.email || selectedClient.phone || "Aucun contact"}</p>
-                <p>{selectedClient.visits || 0} visites · {selectedClient.points || 0} points</p>
-                {merchantId ? (
-                  <div className="muted mono small row wrap detail-client-ids">
-                    <span>ID client : {selectedClient.id}</span>
-                    <button
-                      type="button"
-                      className="secondary tiny-inline"
-                      onClick={() => copyText(selectedClient.id, "ID client copie")}
-                    >
-                      Copier ID
-                    </button>
-                  </div>
-                ) : null}
-                <p className="muted">
-                  Wallet : ajoute la carte depuis Loyalty Pro. Notifications : campagnes email aujourd'hui, push web dans
-                  un lot suivant.
+                <p>
+                  {selectedClient.points || 0} points · {selectedClient.visits || 0} visites
                 </p>
-                <div className="row wrap">
-                  <button
-                    type="button"
-                    disabled={!walletDiagnostics?.appleWallet?.ready}
-                    onClick={() => openApplePass(auth.token, selectedClient.id)}
-                  >
-                    {walletDiagnostics?.appleWallet?.ready ? "Ajouter cette cliente a Apple Wallet" : "Configurer Apple Wallet"}
-                  </button>
-                  {!walletDiagnostics?.appleWallet?.ready ? (
-                    <span className="muted">Va dans l'onglet Wallet pour finir la configuration Apple.</span>
-                  ) : null}
-                </div>
-                <div className="card inner">
-                  <strong>Option gratuite (sans Apple Wallet)</strong>
-                  <p className="muted">
-                    Genere un lien carte pour le client. Sur iPhone/Android, le client peut l'ajouter a l'ecran d'accueil
-                    (PWA).
-                  </p>
-                  <div className="row wrap">
-                    <button type="button" className="secondary" onClick={() => loadPublicCardLink(selectedClient)}>
-                      Copier lien carte (PWA)
-                    </button>
-                    {publicCardLink ? (
-                      <a className="link-btn" href={publicCardLink} target="_blank" rel="noreferrer">
-                        Ouvrir
-                      </a>
-                    ) : null}
-                  </div>
-                  {publicCardLink ? <p className="muted mono">{publicCardLink}</p> : null}
-                </div>
               </div>
               <button type="button" className="danger" disabled={isBusy} onClick={() => deleteClient(selectedClient)}>
-                Supprimer (RGPD)
+                Supprimer
               </button>
             </div>
+
+            <div className="row wrap">
+              <button type="button" onClick={() => addPoint(selectedClient.id)}>
+                +1 point
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR copie")}
+              >
+                Copier QR
+              </button>
+              <button type="button" className="secondary" onClick={() => loadPublicCardLink(selectedClient)}>
+                Copier lien carte
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                disabled={!walletDiagnostics?.appleWallet?.ready}
+                onClick={() => openApplePass(auth.token, selectedClient.id)}
+              >
+                {walletDiagnostics?.appleWallet?.ready ? "Apple Wallet" : "Apple Wallet indisponible"}
+              </button>
+            </div>
+
+            {publicCardLink ? <p className="muted mono">{publicCardLink}</p> : null}
+
             {isHistoryLoading ? <div className="skeleton">Chargement historique...</div> : null}
             <div className="timeline">
-              {history.map((entry) => (
+              {history.slice(0, 8).map((entry) => (
                 <div className="timeline-item" key={entry.id}>
                   <strong>+{entry.points_added} pts</strong>
                   <p>
@@ -735,7 +606,126 @@ export function ClientsPage({ auth }) {
           </>
         )}
       </article>
-      <p>{status}</p>
+
+      <details className="card advanced-tools">
+        <summary>Outils avancés</summary>
+        <div className="stack advanced-tools-body">
+          <article className="card inner">
+            <h3>Import CSV</h3>
+            <p className="muted">Colonnes detectees automatiquement. Nom + email ou telephone obligatoires par ligne.</p>
+            <input type="file" accept=".csv,text/csv" onChange={handleCsvFile} />
+            <label className="consent">
+              <input type="checkbox" checked={hasHeader} onChange={(event) => setHasHeader(event.target.checked)} />
+              La premiere ligne contient les en-tetes
+            </label>
+            <div className="row">
+              <button type="button" className="secondary" disabled={importBusy} onClick={runImportPreview}>
+                Previsualiser
+              </button>
+              <button type="button" disabled={importBusy || !importPreview} onClick={commitImport}>
+                Importer
+              </button>
+            </div>
+            {importPreview && importPreview.columns?.length ? (
+              <div className="import-mapping">
+                <div className="row wrap">
+                  <label>
+                    Nom
+                    <select
+                      value={importMapping.fullName}
+                      onChange={(event) => setImportMapping((prev) => ({ ...prev, fullName: event.target.value }))}
+                    >
+                      {importPreview.columns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Email
+                    <select
+                      value={importMapping.email}
+                      onChange={(event) => setImportMapping((prev) => ({ ...prev, email: event.target.value }))}
+                    >
+                      <option value="__skip__">Ignorer</option>
+                      {importPreview.columns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Telephone
+                    <select
+                      value={importMapping.phone}
+                      onChange={(event) => setImportMapping((prev) => ({ ...prev, phone: event.target.value }))}
+                    >
+                      <option value="__skip__">Ignorer</option>
+                      {importPreview.columns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    Consentement marketing
+                    <select
+                      value={importMapping.consentMarketing}
+                      onChange={(event) =>
+                        setImportMapping((prev) => ({ ...prev, consentMarketing: event.target.value }))
+                      }
+                    >
+                      <option value="__skip__">Ignorer</option>
+                      {importPreview.columns.map((col) => (
+                        <option key={col} value={col}>
+                          {col}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <p className="muted">{importPreview.totalRows} lignes au total · apercu:</p>
+                <div className="table compact">
+                  {importPreview.previewRows.slice(0, 5).map((row, index) => (
+                    <div className="row item" key={`preview-${index}`}>
+                      <span>{typeof row === "object" ? JSON.stringify(row) : row.join(", ")}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : importPreview ? (
+              <p className="muted">Impossible de detecter les colonnes. Verifie le separateur ou les en-tetes.</p>
+            ) : null}
+          </article>
+
+          <article className="card inner">
+            <h3>FidélioGen / QR technique</h3>
+            <p className="muted">
+              Pour le générateur, colle l'ID commerce et l'ID client pour produire un QR compatible caisse.
+            </p>
+            {merchantId ? (
+              <div className="row wrap align-start">
+                <label className="grow">
+                  ID commerce
+                  <input readOnly value={merchantId} className="mono" />
+                </label>
+                <button
+                  type="button"
+                  className="secondary self-end"
+                  onClick={() => copyText(merchantId, "ID commerce copie")}
+                >
+                  Copier commerce
+                </button>
+              </div>
+            ) : (
+              <p className="muted">Reconnecte-toi pour afficher ton ID commerce.</p>
+            )}
+          </article>
+        </div>
+      </details>
     </section>
   );
 }
