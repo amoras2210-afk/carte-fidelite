@@ -51,7 +51,7 @@ async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merc
 
 async function processDueReviewNotifications(limit = 20) {
   const due = await db.query(
-    `SELECT id, payload
+    `SELECT id, merchant_id, payload
      FROM delayed_notifications
      WHERE status = 'pending'
        AND notification_type = $1
@@ -65,6 +65,7 @@ async function processDueReviewNotifications(limit = 20) {
     const payload = row.payload || {};
     try {
       const result = await sendReviewRequestEmail({
+        merchantId: row.merchant_id,
         merchantName: payload.merchantName || "Votre commerce",
         clientEmail: payload.clientEmail,
         clientName: payload.clientName || "client",

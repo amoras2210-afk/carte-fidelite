@@ -32,6 +32,7 @@ async function getSettings(req, res, next) {
     const merchantId = req.auth.merchantId;
     const result = await db.query(
       `SELECT m.id, m.business_name, m.email, m.brand_color, m.plan_mrr_eur, m.review_url,
+              m.google_mail_address, m.google_mail_connected_at,
               m.card_tagline, m.card_theme, m.card_style, m.card_bg_color, m.card_bg2_color,
               m.card_accent_color, m.card_accent2_color, m.card_text_color, m.card_text_muted_color,
               m.card_stamp_color, m.card_logo_url,
@@ -51,6 +52,8 @@ async function getSettings(req, res, next) {
         merchantId: row.id,
         businessName: row.business_name,
         reviewUrl: row.review_url || "",
+        googleMailAddress: row.google_mail_address || "",
+        googleMailConnected: Boolean(row.google_mail_connected_at),
         email: row.email,
         brandColor: row.brand_color,
         rewardThreshold: row.reward_threshold,

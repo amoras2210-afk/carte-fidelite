@@ -6,6 +6,8 @@ import { applyThemePreset, DEFAULT_CARD_DESIGN, resolveCardDesign } from "../lib
 const initialState = {
   businessName: "",
   reviewUrl: "",
+  googleMailAddress: "",
+  googleMailConnected: false,
   brandColor: "#1f2937",
   rewardThreshold: 10,
   rewardLabel: "1 reward",
@@ -24,6 +26,8 @@ export function SettingsPage({ auth }) {
         setSettings({
           businessName: response.data.businessName,
           reviewUrl: response.data.reviewUrl || "",
+          googleMailAddress: response.data.googleMailAddress || "",
+          googleMailConnected: Boolean(response.data.googleMailConnected),
           brandColor: response.data.brandColor,
           rewardThreshold: response.data.rewardThreshold,
           rewardLabel: response.data.rewardLabel,
@@ -57,6 +61,31 @@ export function SettingsPage({ auth }) {
     }
   };
 
+  const connectGoogleMail = async () => {
+    try {
+      const response = await apiRequest("/settings/google/connect-url", { token: auth.token, retries: 0 });
+      const connectUrl = response.data?.connectUrl;
+      if (!connectUrl) throw new Error("Lien de connexion Google indisponible");
+      window.open(connectUrl, "_blank", "noopener,noreferrer");
+      showToast("Fenetre Google ouverte. Autorise l'acces puis recharge cette page.", "info");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
+  const disconnectGoogleMail = async () => {
+    try {
+      await apiRequest("/settings/google/disconnect", {
+        token: auth.token,
+        method: "POST"
+      });
+      setSettings((prev) => ({ ...prev, googleMailConnected: false, googleMailAddress: "" }));
+      showToast("Compte Gmail deconnecte", "success");
+    } catch (error) {
+      showToast(error.message, "error");
+    }
+  };
+
   return (
     <article className="card">
       <h2>Parametres commerce</h2>
@@ -78,6 +107,32 @@ export function SettingsPage({ auth }) {
           onChange={(event) => setSettings((prev) => ({ ...prev, reviewUrl: event.target.value }))}
           placeholder="Lien page d'avis (Google/Facebook/Tripadvisor)"
         />
+        <div className="card inner">
+          <div className="row spread wrap">
+            <div>
+              <h3>Envoi email depuis Gmail du commerce</h3>
+              <p className="muted">
+                Le commerçant connecte son compte Google une fois, puis les emails partent depuis cette adresse.
+              </p>
+            </div>
+            <span className="badge info-badge">
+              {settings.googleMailConnected ? "Connecte" : "Non connecte"}
+            </span>
+          </div>
+          <p className="muted">
+            Adresse connectee : <strong>{settings.googleMailAddress || "Aucune"}</strong>
+          </p>
+          <div className="row wrap">
+            <button type="button" onClick={connectGoogleMail}>
+              Connecter Gmail
+            </button>
+            {settings.googleMailConnected ? (
+              <button type="button" className="ghost" onClick={disconnectGoogleMail}>
+                Deconnecter Gmail
+              </button>
+            ) : null}
+          </div>
+        </div>
         <input
           type="number"
           value={settings.rewardThreshold}
