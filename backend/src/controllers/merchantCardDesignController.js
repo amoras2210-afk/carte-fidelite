@@ -22,6 +22,7 @@ const cardDesignSchema = z.object({
 
 const updateMerchantCardDesignSchema = z.object({
   businessName: z.string().min(2).max(120),
+  rewardLabel: z.string().min(2).max(80).optional(),
   cardDesign: cardDesignSchema
 });
 
@@ -65,6 +66,12 @@ async function updateMerchantCardDesignFromToken(req, res, next) {
         merchantId
       ]
     );
+    if (payload.rewardLabel) {
+      await db.query(
+        "UPDATE loyalty_settings SET reward_label = $1 WHERE merchant_id = $2",
+        [payload.rewardLabel, merchantId]
+      );
+    }
 
     await logAuditEvent({
       merchantId,
@@ -73,6 +80,7 @@ async function updateMerchantCardDesignFromToken(req, res, next) {
       targetId: merchantId,
       metadata: {
         businessName: payload.businessName,
+        rewardLabel: payload.rewardLabel || null,
         cardTheme: payload.cardDesign.theme,
         cardStyle: payload.cardDesign.style
       }

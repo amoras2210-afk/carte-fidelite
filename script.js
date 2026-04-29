@@ -648,6 +648,7 @@
         };
         const payload = {
           businessName: inputs.shopName?.value || "",
+          rewardLabel: inputs.rewardText?.value || "",
           cardDesign
         };
 
