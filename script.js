@@ -697,6 +697,7 @@
   ────────────────────────────────────────── */
   const params = new URLSearchParams(window.location.search);
   const urlToken = (params.get("token") || "").trim();
+  const cardUrlParam = (params.get("cardUrl") || "").trim();
 
   const setValue = (inputEl, value) => {
     if (!inputEl) return;
@@ -768,10 +769,14 @@
     setValue(inputs.colStamp, params.get("colStamp"));
   }
 
-  // Public card link for the client (computed from token)
-  if (urlToken) {
-    const origin = window.location.origin;
-    const publicCardLink = `${origin}/card?token=${encodeURIComponent(urlToken)}`;
+  // Public card link for the client.
+  // Priority:
+  // 1) explicit cardUrl from Loyalty Pro (important when generator is on another domain)
+  // 2) fallback from token on same origin
+  const publicCardLink =
+    cardUrlParam || (urlToken ? `${window.location.origin}/card?token=${encodeURIComponent(urlToken)}` : "");
+
+  if (publicCardLink) {
 
     const section = $("loyaltyLinkSection");
     const input = $("publicCardLinkInput");

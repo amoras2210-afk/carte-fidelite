@@ -4,6 +4,8 @@ import { API_BASE, apiRequest, openApplePass } from "../lib/api";
 import { decodeJwtPayload } from "../lib/jwtPayload";
 import { useToast } from "../components/ToastContext";
 
+const GENERATOR_BASE_URL = (import.meta.env.VITE_GENERATOR_URL || "https://loyaltycardgenerator.pages.dev").replace(/\/$/, "");
+
 export function ClientsPage({ auth }) {
   const [clients, setClients] = useState([]);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -267,9 +269,11 @@ export function ClientsPage({ auth }) {
 
       const settings = settingsResp.data || {};
       const cardDesign = settings.cardDesign || {};
+      const publicCardUrl = buildPublicCardUrl(tokenResp.data.token);
 
       const params = new URLSearchParams();
       params.set("token", tokenResp.data.token);
+      params.set("cardUrl", publicCardUrl);
       params.set("qrMerchant", String(merchantId));
       params.set("qrClient", String(selectedClient.id));
 
@@ -294,7 +298,7 @@ export function ClientsPage({ auth }) {
         params.set("colStamp", cardDesign.accentColor || "#c9a84c");
       }
 
-      const generatorUrl = `${window.location.origin}/fideliogen/?${params.toString()}`;
+      const generatorUrl = `${GENERATOR_BASE_URL}/?${params.toString()}`;
       window.open(generatorUrl, "_blank", "noopener,noreferrer");
       showToast("FidélioGen ouvert avec la carte pre-remplie.", "success");
     } catch (error) {
