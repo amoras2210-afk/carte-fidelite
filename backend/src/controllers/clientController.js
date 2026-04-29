@@ -8,7 +8,7 @@ const { scheduleFirstVisitReviewNotification } = require("../services/reviewNoti
 const { logAuditEvent } = require("../services/auditService");
 const { sendSuccess } = require("../utils/httpResponse");
 const { parsePagination } = require("../utils/pagination");
-const { signCardToken } = require("../utils/cardToken");
+const { signCardToken, signMerchantCardDesignToken } = require("../utils/cardToken");
 
 const createClientSchema = z.object({
   fullName: z.string().min(2),
@@ -413,9 +413,11 @@ async function createClientCardToken(req, res, next) {
     }
 
     const token = signCardToken({ merchantId, clientId });
+    const designToken = signMerchantCardDesignToken({ merchantId });
     return sendSuccess(res, {
       data: {
-        token
+        token,
+        designToken
       }
     });
   } catch (error) {

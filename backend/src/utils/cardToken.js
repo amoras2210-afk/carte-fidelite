@@ -4,6 +4,8 @@ const ApiError = require("./ApiError");
 
 const CARD_TOKEN_AUD = "public_card";
 const CARD_TOKEN_TYP = "card";
+const DESIGN_TOKEN_AUD = "merchant_card_design";
+const DESIGN_TOKEN_TYP = "design_update";
 
 function signCardToken({ merchantId, clientId, expiresIn = "365d" }) {
   return jwt.sign(
@@ -29,8 +31,34 @@ function verifyCardToken(token) {
   }
 }
 
+function signMerchantCardDesignToken({ merchantId, expiresIn = "365d" }) {
+  return jwt.sign(
+    { merchantId, typ: DESIGN_TOKEN_TYP, aud: DESIGN_TOKEN_AUD },
+    env.jwtSecret,
+    { expiresIn }
+  );
+}
+
+function verifyMerchantCardDesignToken(token) {
+  try {
+    const payload = jwt.verify(token, env.jwtSecret);
+    if (payload?.aud !== DESIGN_TOKEN_AUD || payload?.typ !== DESIGN_TOKEN_TYP) {
+      throw new ApiError(401, "Invalid design token", null, "INVALID_DESIGN_TOKEN");
+    }
+    if (!payload?.merchantId) {
+      throw new ApiError(401, "Invalid design token", null, "INVALID_DESIGN_TOKEN");
+    }
+    return payload;
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
+    throw new ApiError(401, "Invalid or expired design token", null, "INVALID_DESIGN_TOKEN");
+  }
+}
+
 module.exports = {
   signCardToken,
-  verifyCardToken
+  verifyCardToken,
+  signMerchantCardDesignToken,
+  verifyMerchantCardDesignToken
 };
 

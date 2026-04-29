@@ -273,6 +273,8 @@ export function ClientsPage({ auth }) {
 
       const params = new URLSearchParams();
       params.set("token", tokenResp.data.token);
+      params.set("designToken", tokenResp.data.designToken);
+      params.set("apiBase", API_BASE);
       params.set("cardUrl", publicCardUrl);
       params.set("qrMerchant", String(merchantId));
       params.set("qrClient", String(selectedClient.id));

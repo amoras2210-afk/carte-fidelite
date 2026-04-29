@@ -18,6 +18,7 @@
   let currentProgram = 'tampons';
   let currentStyle = 'modern';
   let logoImage = null;
+  let logoDataUrl = "";
 
   const STAMP_ICONS = {
     tampons: '✦',
@@ -610,6 +611,7 @@
     if (!file) return;
     const reader = new FileReader();
     reader.onload = e => {
+      logoDataUrl = e.target?.result || "";
       const img = new Image();
       img.onload = () => { logoImage = img; $('uploadLabel').textContent = file.name; draw(); };
       img.src = e.target.result;
@@ -622,12 +624,54 @@
   ────────────────────────────────────────── */
   $('btnExport').addEventListener('click', async () => {
     await draw();
-    const name = (inputs.shopName.value || 'carte').toLowerCase().replace(/\s+/g, '-');
-    const link = document.createElement('a');
-    link.download = `carte-fidelite-${name}.png`;
-    link.href = canvas.toDataURL('image/png', 1);
-    link.click();
-    toast('Export PNG enregistré.');
+    // Synchronise le design avec Loyalty Pro, puis affiche le lien digital.
+    // (si on a bien recu un token de design et une base API)
+    let designSaved = false;
+    try {
+      const apiBase = params.get("apiBase") || "";
+      const designToken = params.get("designToken") || "";
+      if (apiBase && designToken) {
+        const t = getTheme();
+        const cardDesign = {
+          tagline: inputs.tagline?.value || "",
+          theme: currentTheme,
+          style: currentStyle,
+          bgColor: t.bg,
+          bg2Color: t.bg2,
+          accentColor: t.accent,
+          accent2Color: t.accent2,
+          textColor: t.text,
+          textMutedColor: t.text2,
+          stampColor: t.stamp,
+          // Evite l'echec si la dataURL est trop grosse
+          logoUrl: logoDataUrl && logoDataUrl.length <= 20000 ? logoDataUrl : ""
+        };
+        const payload = {
+          businessName: inputs.shopName?.value || "",
+          cardDesign
+        };
+
+        const resp = await fetch(
+          `${apiBase}/public/merchant/card-design?token=${encodeURIComponent(designToken)}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          }
+        );
+        if (resp.ok) designSaved = true;
+      }
+    } catch {
+      // On ne bloque pas l'affichage du lien : on veut que le commerçant ait toujours au moins le lien.
+    }
+
+    try {
+      revealLoyaltyLink();
+    } catch {
+      /* ignore */
+    }
+
+    toast(designSaved ? "Carte digitale prete (design sauvegarde)." : "Carte generée. Lien client disponible.");
   });
 
   /* ──────────────────────────────────────────
@@ -776,18 +820,23 @@
   const publicCardLink =
     cardUrlParam || (urlToken ? `${window.location.origin}/card?token=${encodeURIComponent(urlToken)}` : "");
 
-  if (publicCardLink) {
-
+  function revealLoyaltyLink() {
     const section = $("loyaltyLinkSection");
     const input = $("publicCardLinkInput");
     const btnCopy = $("btnCopyPublicCardLink");
     const btnOpen = $("btnOpenPublicCardLink");
 
-    if (section) section.style.display = "block";
-    if (input) input.value = publicCardLink;
+    if (!section || !input) return;
+
+    // Pas de lien (token manquant) => on ne montre rien.
+    if (!publicCardLink) return;
+
+    section.style.display = "block";
+
+    input.value = publicCardLink || "";
 
     if (btnCopy && input) {
-      btnCopy.addEventListener("click", async () => {
+      btnCopy.onclick = async () => {
         try {
           await navigator.clipboard.writeText(publicCardLink);
           toast("Lien carte copié.");
@@ -796,15 +845,18 @@
           input.focus();
           input.select();
         }
-      });
+      };
     }
 
     if (btnOpen) {
-      btnOpen.addEventListener("click", () => {
+      btnOpen.onclick = () => {
+        if (!publicCardLink) return toast("Lien indisponible pour l’instant.");
         window.open(publicCardLink, "_blank", "noopener,noreferrer");
-      });
+      };
     }
   }
+
+  // Le lien est affiche uniquement apres clic sur "Generer la carte".
 
   /* ──────────────────────────────────────────
      INIT
