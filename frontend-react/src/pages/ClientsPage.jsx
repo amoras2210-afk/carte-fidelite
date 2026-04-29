@@ -590,79 +590,72 @@ export function ClientsPage({ auth }) {
 
             <article className="card inner">
               <h3>Generateur FidelioGen : quoi copier ?</h3>
-              <p className="muted">
-                Si tu veux creer une carte visuelle dans le generateur, utilise les valeurs ci-dessous. Tu peux soit
-                coller les IDs separes, soit copier directement le texte QR complet.
+              <p className="muted generator-intro">
+                Tout ce qu'il faut copier pour creer la carte de <strong>{selectedClient.full_name}</strong> est juste
+                ici.
               </p>
-              <div className="table compact">
-                <div className="row item">
-                  <strong>Etape 1</strong>
-                  <span>Ouvre le generateur FidelioGen (le fichier visuel separe).</span>
+              <div className="generator-steps">
+                <div className="generator-step">
+                  <span className="generator-step-number">1</span>
+                  <div>
+                    <strong>Ouvre FidelioGen</strong>
+                    <p>Utilise le generateur visuel pour preparer la carte.</p>
+                  </div>
                 </div>
-                <div className="row item">
-                  <strong>Etape 2</strong>
-                  <span>
-                    Dans le generateur, colle <strong>l'ID commercant</strong> puis <strong>l'ID client</strong>.
-                  </span>
+                <div className="generator-step">
+                  <span className="generator-step-number">2</span>
+                  <div>
+                    <strong>Colle les identifiants</strong>
+                    <p>Renseigne l'ID commercant puis l'ID client.</p>
+                  </div>
                 </div>
-                <div className="row item">
-                  <strong>Etape 3</strong>
-                  <span>
-                    Si le generateur demande directement une valeur QR, ne colle pas les 2 IDs separes : colle le{" "}
-                    <strong>texte QR complet</strong>.
-                  </span>
+                <div className="generator-step">
+                  <span className="generator-step-number">3</span>
+                  <div>
+                    <strong>Ou colle directement le QR</strong>
+                    <p>Si le generateur demande une seule valeur QR, utilise le texte complet.</p>
+                  </div>
                 </div>
               </div>
-              <div className="stack">
-                <div className="row wrap align-start">
-                  <label className="grow">
-                    1. ID commercant
-                    <input readOnly value={merchantId || ""} className="mono" />
-                  </label>
+              <div className="generator-copy-grid">
+                <div className="generator-copy-card">
+                  <p className="generator-copy-label">ID commercant</p>
+                  <input readOnly value={merchantId || ""} className="mono" />
                   <button
                     type="button"
-                    className="secondary self-end"
+                    className="secondary"
                     onClick={() => copyText(merchantId, "ID commercant copie")}
                     disabled={!merchantId}
                   >
                     Copier ID commercant
                   </button>
                 </div>
-                <div className="row wrap align-start">
-                  <label className="grow">
-                    2. ID client
-                    <input readOnly value={selectedClient.id} className="mono" />
-                  </label>
+                <div className="generator-copy-card">
+                  <p className="generator-copy-label">ID client</p>
+                  <input readOnly value={selectedClient.id} className="mono" />
                   <button
                     type="button"
-                    className="secondary self-end"
+                    className="secondary"
                     onClick={() => copyText(selectedClient.id, "ID client copie")}
                   >
                     Copier ID client
                   </button>
                 </div>
-                <div className="row wrap align-start">
-                  <label className="grow">
-                    3. Texte QR complet a coller dans le generateur
-                    <input readOnly value={qrPayloadForClient(selectedClient)} className="mono" />
-                  </label>
+                <div className="generator-copy-card generator-copy-card-full">
+                  <p className="generator-copy-label">Texte QR complet</p>
+                  <input readOnly value={qrPayloadForClient(selectedClient)} className="mono" />
                   <button
                     type="button"
-                    className="secondary self-end"
+                    className="secondary"
                     onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR complet copie")}
                   >
                     Copier texte QR
                   </button>
                 </div>
               </div>
-              <p className="muted">
-                En pratique : dans le generateur, colle <strong>l'ID commercant</strong> dans le champ commerce,{" "}
-                <strong>l'ID client</strong> dans le champ client. Si le generateur te demande directement une valeur QR,
-                colle plutot le <strong>texte QR complet</strong>.
-              </p>
-              <p className="muted">
-                Rappel : le generateur sert a creer le visuel de la carte. Le scan dans Loyalty Pro utilise ensuite ces
-                memes informations pour reconnaitre le bon commerce et le bon client.
+              <p className="muted generator-note">
+                Astuce : si FidelioGen affiche deux champs separes, utilise les deux IDs. S'il affiche un seul champ QR,
+                colle le texte QR complet.
               </p>
             </article>
 

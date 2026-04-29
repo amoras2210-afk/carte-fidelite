@@ -653,6 +653,83 @@ pre {
   align-items: center;
 }
 
+.generator-intro {
+  margin-bottom: 14px;
+}
+
+.generator-steps {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 16px;
+}
+
+.generator-step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.generator-step strong {
+  display: block;
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.generator-step p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.generator-step-number {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.generator-copy-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.generator-copy-card {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #dbe4f0;
+  border-radius: 14px;
+  background: #fff;
+}
+
+.generator-copy-card-full {
+  grid-column: 1 / -1;
+}
+
+.generator-copy-label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #475569;
+}
+
+.generator-note {
+  margin: 12px 0 0;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
@@ -727,5 +804,9 @@ pre {
 
   .client-row-meta {
     justify-items: start;
+  }
+
+  .generator-copy-grid {
+    grid-template-columns: 1fr;
   }
 }
