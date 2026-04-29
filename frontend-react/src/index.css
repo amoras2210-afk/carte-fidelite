@@ -161,12 +161,158 @@ body {
   max-width: 52ch;
 }
 
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .topbar-logout {
   flex-shrink: 0;
 }
 
+.theme-toggle-btn {
+  font-size: 13px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+
 .content-inner {
   max-width: 1120px;
+}
+
+/* ---------- Dark theme ---------- */
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg-page: #0b101a;
+  --bg-elevated: #141c2c;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #2d3d56;
+  --accent: #3b82f6;
+  --accent-hover: #60a5fa;
+  --sidebar: #06090f;
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-active: rgba(59, 130, 246, 0.28);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+html[data-theme="dark"] .shell {
+  background: linear-gradient(165deg, #111827 0%, var(--bg-page) 42%, var(--bg-page) 100%);
+}
+
+html[data-theme="dark"] .card.subtle {
+  background: rgba(20, 28, 44, 0.82);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .quick-link {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .quick-link:hover {
+  background: rgba(59, 130, 246, 0.22);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select {
+  background: #1e293b;
+  color: var(--text);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .mobile-nav {
+  background: rgba(20, 28, 44, 0.94);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .mobile-nav-link {
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .wallet-panel {
+  background: #121a28;
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .soft-note {
+  background: rgba(59, 130, 246, 0.08);
+  border-color: rgba(59, 130, 246, 0.28);
+  color: #cbd5e1;
+}
+
+html[data-theme="dark"] .generator-step {
+  background: linear-gradient(180deg, #1a2332 0%, #141c2c 100%);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .generator-step strong {
+  color: var(--text);
+}
+
+html[data-theme="dark"] pre {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .client-row-card {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .client-row-card:hover {
+  background: #1e293b;
+  border-color: #475569;
+}
+
+html[data-theme="dark"] .timeline-item {
+  background: var(--bg-page);
+  border-color: var(--border);
+}
+
+html[data-theme="dark"] .scan-status {
+  background: #1e293b;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .scan-status.live {
+  background: rgba(59, 130, 246, 0.14);
+  border-color: rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+html[data-theme="dark"] .auth-shell {
+  background: linear-gradient(165deg, #111827 0%, #0b101a 55%, #06090f 100%);
+}
+
+html[data-theme="dark"] .auth-panel.card {
+  background: var(--bg-elevated);
+  border-color: var(--border);
+  box-shadow: var(--shadow-md);
+}
+
+html[data-theme="dark"] .skeleton {
+  background: #1e293b;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+
+html[data-theme="dark"] .toast {
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 900px) {
+  html[data-theme="dark"] .topbar {
+    background: rgba(11, 16, 26, 0.94);
+    border-bottom-color: var(--border);
+  }
 }
 
 .grid {
@@ -271,6 +417,28 @@ body {
 .quick-link:hover {
   background: #dbeafe;
   transform: translateY(-1px);
+}
+
+.section-heading {
+  margin: 0 0 14px;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.clients-intro-card .clients-mini-stats {
+  margin-top: 18px;
+}
+
+.clients-lead {
+  margin: 0;
+  max-width: 72ch;
+  line-height: 1.55;
+}
+
+.clients-mini-stats {
+  margin-top: 0;
 }
 
 .form {
@@ -872,10 +1040,23 @@ pre {
   gap: 12px;
 }
 
+.wallet-grid-spaced {
+  margin-top: 18px;
+  gap: 16px;
+}
+
+.wallet-guide-stack {
+  gap: 11px;
+}
+
+.wallet-guide-cta {
+  margin-top: 6px;
+}
+
 .wallet-panel {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
   background: #f8fafc;
 }
 

@@ -30,14 +30,14 @@ export function WalletPage({ auth }) {
 
   const loadGooglePayload = async () => {
     if (!googleClientId.trim()) {
-      showToast("Renseigne un ID client", "error");
+      showToast("Indique un ID client", "error");
       return;
     }
     try {
       setIsLoadingGoogle(true);
       const response = await apiRequest(`/wallet/google/${googleClientId}`, { token: auth.token });
       setGooglePayload(JSON.stringify(response.data, null, 2));
-      showToast("Payload Google charge", "success");
+      showToast("Payload Google chargé", "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
@@ -46,20 +46,20 @@ export function WalletPage({ auth }) {
   };
 
   return (
-    <section className="stack">
+    <section className="stack wallet-page">
       <article className="card">
-        <h2>État Wallet</h2>
+        <h2 className="section-heading">État des passes</h2>
         <p className="muted">
-          Les passes sont signés côté serveur. Configure les certificats pour Apple ; Google Wallet peut fonctionner en
-          mode gabarit tant que la prod n’est pas branchée.
+          Les fichiers sont signés côté serveur. Configure les certificats Apple pour la prod ; Google Wallet peut rester
+          en gabarit tant que la signature finale n’est pas branchée.
         </p>
         {diagnostics ? (
-          <div className="wallet-grid">
+          <div className="wallet-grid wallet-grid-spaced">
             <section className="wallet-panel">
               <div className="wallet-panel-head">
                 <h3>Apple Wallet</h3>
                 <span className={`wallet-state ${diagnostics.appleWallet.ready ? "ok" : "warn"}`}>
-                  {diagnostics.appleWallet.ready ? "Pret" : "Configuration requise"}
+                  {diagnostics.appleWallet.ready ? "Prêt" : "À configurer"}
                 </span>
               </div>
               <p>{diagnostics.appleWallet.message}</p>
@@ -67,22 +67,24 @@ export function WalletPage({ auth }) {
                 {diagnostics.appleWallet.files.map((file) => (
                   <li key={file.key}>
                     <strong>{file.label} :</strong>{" "}
-                    {file.configured ? (file.exists ? "fichier detecte" : "chemin configure mais fichier absent") : "non configure"}
+                    {file.configured
+                      ? file.exists
+                        ? "fichier détecté"
+                        : "chemin défini mais fichier absent"
+                      : "non configuré"}
                   </li>
                 ))}
                 <li>
-                  <strong>Pass Type ID :</strong> {diagnostics.appleWallet.passTypeIdentifier || "non configure"}
+                  <strong>Pass Type ID :</strong> {diagnostics.appleWallet.passTypeIdentifier || "non configuré"}
                 </li>
                 <li>
-                  <strong>Team ID :</strong> {diagnostics.appleWallet.teamIdentifier || "non configure"}
+                  <strong>Team ID :</strong> {diagnostics.appleWallet.teamIdentifier || "non configuré"}
                 </li>
               </ul>
               {diagnostics.appleWallet.missingItems.length ? (
-                <p className="muted">
-                  A completer pour la prod : {diagnostics.appleWallet.missingItems.join(", ")}.
-                </p>
+                <p className="muted">À compléter pour la prod : {diagnostics.appleWallet.missingItems.join(", ")}.</p>
               ) : (
-                <p className="muted">Le bouton Apple Pass dans la fiche client peut etre utilise des maintenant.</p>
+                <p className="muted">Tu peux utiliser le bouton Apple Pass depuis une fiche client.</p>
               )}
             </section>
 
@@ -90,7 +92,7 @@ export function WalletPage({ auth }) {
               <div className="wallet-panel-head">
                 <h3>Google Wallet</h3>
                 <span className={`wallet-state ${diagnostics.googleWallet.configured ? "ok" : "soft"}`}>
-                  {diagnostics.googleWallet.configured ? "Mode integration" : "Mode gabarit"}
+                  {diagnostics.googleWallet.configured ? "Intégration" : "Gabarit"}
                 </span>
               </div>
               <p>{diagnostics.googleWallet.message}</p>
@@ -106,45 +108,42 @@ export function WalletPage({ auth }) {
                 </li>
               </ul>
               <p className="muted">
-                Tant que la signature finale Google n'est pas branchee, ce bloc sert surtout de diagnostic et de base
-                pour la suite.
+                Utile surtout comme diagnostic tant que la signature Google Wallet n’est pas finalisée.
               </p>
             </section>
           </div>
         ) : (
-          <p>Chargement...</p>
+          <p className="muted">Chargement…</p>
         )}
       </article>
 
       <article className="card">
-        <h2>Guide rapide</h2>
-        <div className="stack">
+        <h2 className="section-heading">Guide rapide</h2>
+        <div className="stack wallet-guide-stack">
           <div className="soft-note">
-            <strong>1. Creer ou ouvrir un client.</strong> Depuis la page <Link to="/clients">Clients</Link>, chaque
-            fiche client contient deja le bouton <code>Apple Pass</code>.
+            <strong>1. Client</strong> — Crée ou ouvre une fiche sur la page{" "}
+            <Link to="/clients">Clients</Link>. Le bouton <code>Apple Pass</code> s’y trouve.
           </div>
           <div className="soft-note">
-            <strong>2. Utiliser le generateur visuel uniquement pour le design.</strong> Le fichier <code>index.html</code>{" "}
-            produit une carte visuelle et un QR, mais pas un pass Wallet signe.
+            <strong>2. Design</strong> — Utilise le générateur visuel uniquement pour le rendu ; le fichier HTML produit un
+            visuel + QR, pas un pass signé.
           </div>
           <div className="soft-note">
-            <strong>3. Scanner cote commerçant.</strong> Les points ne doivent pas monter par auto-scan client. Le QR doit
-            etre lu par la caisse ou par l'interface commerçant.
+            <strong>3. Points</strong> — Le QR doit être scanné par la caisse ou ton interface commerçant, pas en
+            auto-scan côté client.
           </div>
         </div>
-        <div className="row wrap align-start">
+        <div className="row wrap align-start wallet-guide-cta">
           <Link className="link-btn" to="/clients">
-            Ouvrir les fiches clients
+            Ouvrir les clients
           </Link>
-          <span className="muted">Ajoute la carte Apple Wallet depuis une fiche client.</span>
+          <span className="muted">Ajoute Apple Wallet depuis la fiche du client.</span>
         </div>
       </article>
 
-      <details className="card advanced-details">
+      <details className="card advanced-details wallet-advanced">
         <summary>Outils avancés — diagnostic Google Wallet</summary>
-        <p className="muted">
-          Payload JSON brut pour un client (intégration technique).
-        </p>
+        <p className="muted">Payload JSON brut pour un client (usage technique).</p>
         <div className="row wrap">
           <input
             value={googleClientId}
@@ -152,7 +151,7 @@ export function WalletPage({ auth }) {
             placeholder="ID client"
           />
           <button type="button" onClick={loadGooglePayload} disabled={isLoadingGoogle}>
-            {isLoadingGoogle ? "Chargement..." : "Charger"}
+            {isLoadingGoogle ? "Chargement…" : "Charger"}
           </button>
         </div>
         {googlePayload ? <pre>{googlePayload}</pre> : <p className="muted">Aucun payload chargé.</p>}

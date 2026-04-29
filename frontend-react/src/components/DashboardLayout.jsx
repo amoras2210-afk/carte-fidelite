@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useTheme } from "../context/ThemeContext.jsx";
 
 /** Navigation desktop. Barre mobile : 4 entrées (pas de sidebar sur petit écran). */
 const NAV_LINKS = [
@@ -29,6 +30,7 @@ function pageMetaForPath(pathname) {
 
 export function DashboardLayout({ auth, children }) {
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const meta = pageMetaForPath(location.pathname);
 
   const isActive = (to) => (to === "/" ? location.pathname === "/" : location.pathname.startsWith(to));
@@ -60,9 +62,21 @@ export function DashboardLayout({ auth, children }) {
             <h1 className="page-head-title">{meta.title}</h1>
             <p className="page-head-sub">{meta.subtitle}</p>
           </div>
-          <button type="button" className="ghost topbar-logout" onClick={() => auth.setToken("")}>
-            Déconnexion
-          </button>
+          <div className="topbar-actions">
+            <button
+              type="button"
+              className="ghost theme-toggle-btn"
+              onClick={toggleTheme}
+              aria-pressed={theme === "dark"}
+              aria-label={theme === "dark" ? "Activer le mode clair" : "Activer le mode sombre"}
+              title={theme === "dark" ? "Mode clair" : "Mode sombre"}
+            >
+              {theme === "dark" ? "Mode clair" : "Mode sombre"}
+            </button>
+            <button type="button" className="ghost topbar-logout" onClick={() => auth.setToken("")}>
+              Déconnexion
+            </button>
+          </div>
         </header>
         <main className="content-inner">{children}</main>
       </section>

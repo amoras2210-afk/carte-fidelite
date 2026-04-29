@@ -35,7 +35,7 @@ export function ClientsPage({ auth }) {
   const scanLockRef = useRef(false);
   const [manualQrValue, setManualQrValue] = useState("");
   const [walletDiagnostics, setWalletDiagnostics] = useState(null);
-  const [scanMessage, setScanMessage] = useState("Pret pour un scan caisse.");
+  const [scanMessage, setScanMessage] = useState("Prêt pour un scan à la caisse.");
   const [lastScan, setLastScan] = useState(null);
   const [publicCardLink, setPublicCardLink] = useState("");
   const { showToast } = useToast();
@@ -123,8 +123,8 @@ export function ClientsPage({ auth }) {
     try {
       await apiRequest("/clients", { token: auth.token, method: "POST", body: form });
       setForm({ fullName: "", phone: "", email: "", consentMarketing: false });
-      setStatus("Client ajoute");
-      showToast("Client ajoute", "success");
+      setStatus("Client ajouté");
+      showToast("Client ajouté", "success");
       await loadClients();
     } catch (error) {
       setStatus(error.message);
@@ -166,12 +166,12 @@ export function ClientsPage({ auth }) {
 
     const parts = value.split(":");
     if (parts.length < 2) {
-      throw new Error("Format QR invalide. Attendu : commerce:client:points");
+      throw new Error("Format QR invalide (attendu : commerce : client : points)");
     }
 
     const [merchantFromQr, clientId] = parts;
     if (merchantId && merchantFromQr !== String(merchantId)) {
-      throw new Error("Ce QR appartient a un autre commerce");
+      throw new Error("Ce QR appartient à un autre commerce");
     }
     return { merchantFromQr, clientId };
   }, [merchantId]);
@@ -188,7 +188,7 @@ export function ClientsPage({ auth }) {
     scanLockRef.current = true;
     try {
       const { clientId, merchantFromQr } = parseQrPayload(rawValue);
-      setScanMessage(`QR detecte pour le client ${clientId}. Attribution en cours...`);
+      setScanMessage(`QR détecté pour le client ${clientId}. Attribution…`);
       await addPoint(clientId, "qr");
       setLastScan({
         merchantId: merchantFromQr,
@@ -196,7 +196,7 @@ export function ClientsPage({ auth }) {
         scannedAt: new Date().toISOString(),
         rawValue
       });
-      setScanMessage(`Point ajoute avec succes pour le client ${clientId}.`);
+      setScanMessage(`Point ajouté pour le client ${clientId}.`);
       stopScan();
       setManualQrValue("");
     } catch (error) {
@@ -217,7 +217,7 @@ export function ClientsPage({ auth }) {
         token: auth.token,
         method: "DELETE"
       });
-      showToast("Client supprime (RGPD)", "success");
+      showToast("Client supprimé (RGPD)", "success");
       if (selectedClient?.id === client.id) {
         setSelectedClient(null);
         setHistory([]);
@@ -320,7 +320,7 @@ export function ClientsPage({ auth }) {
     const text = await file.text();
     setCsvText(text);
     setImportPreview(null);
-    showToast("Fichier charge", "success");
+      showToast("Fichier chargé", "success");
   };
 
   const runImportPreview = async () => {
@@ -346,7 +346,7 @@ export function ClientsPage({ auth }) {
         phone: guessPhone,
         consentMarketing: "__skip__"
       });
-      showToast(`Apercu: ${data.totalRows} lignes`, "success");
+      showToast(`Aperçu : ${data.totalRows} lignes`, "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
@@ -376,7 +376,7 @@ export function ClientsPage({ auth }) {
           }
         }
       });
-      showToast(`Import termine: ${response.data.inserted} lignes`, "success");
+      showToast(`Import terminé : ${response.data.inserted} lignes`, "success");
       setImportPreview(null);
       setCsvText("");
       await loadClients();
@@ -407,7 +407,7 @@ export function ClientsPage({ auth }) {
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast("Export CSV genere", "success");
+      showToast("Export CSV généré", "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
@@ -424,11 +424,11 @@ export function ClientsPage({ auth }) {
         await videoRef.current.play();
         setScanOn(true);
         setScanMessage("Camera active. Place le QR dans le cadre pour attribuer 1 point.");
-        showToast("Camera active. Presente le QR devant l'objectif.", "info");
+        showToast("Caméra active. Présente le QR devant l’objectif.", "info");
       }
     } catch {
       setScanMessage("Camera indisponible. Utilise la saisie manuelle du QR.");
-      showToast("Impossible d'acceder a la camera. Utilise la saisie manuelle ci-dessous.", "error");
+      showToast("Impossible d’accéder à la caméra. Utilise la saisie manuelle ci-dessous.", "error");
     }
   };
 
@@ -467,33 +467,33 @@ export function ClientsPage({ auth }) {
 
   return (
     <section className="stack">
-      <article className="card">
-        <div className="row spread wrap">
-          <div>
-            <h2>Clients</h2>
-            <p className="muted">Ajoute un client, scanne sa carte puis ouvre sa fiche. Les outils avancés sont rangés plus bas.</p>
-          </div>
+      <article className="card clients-intro-card">
+        <div className="row spread wrap align-start">
+          <p className="clients-lead muted">
+            Ajoute des clients, scanne les QR à la caisse et ouvre une fiche pour la carte digitale et les points. Les
+            imports CSV sont sous <strong>Outils avancés</strong> en bas de page.
+          </p>
           {status ? <span className="badge info-badge">{status}</span> : null}
         </div>
-        <div className="grid clients-summary-grid">
-          <article className="card inner stat">
-            <h3>Total clients</h3>
-            <strong>{meta.total || clients.length}</strong>
+        <div className="dashboard-stats clients-mini-stats">
+          <article className="stat-card">
+            <span className="stat-card-label">Clients (total)</span>
+            <strong className="stat-card-value">{meta.total || clients.length}</strong>
           </article>
-          <article className="card inner stat">
-            <h3>Points affichés</h3>
-            <strong>{clients.reduce((sum, client) => sum + (client.points || 0), 0)}</strong>
+          <article className="stat-card">
+            <span className="stat-card-label">Points (page)</span>
+            <strong className="stat-card-value">{clients.reduce((sum, client) => sum + (client.points || 0), 0)}</strong>
           </article>
-          <article className="card inner stat">
-            <h3>Visites affichées</h3>
-            <strong>{clients.reduce((sum, client) => sum + (client.visits || 0), 0)}</strong>
+          <article className="stat-card">
+            <span className="stat-card-label">Visites (page)</span>
+            <strong className="stat-card-value">{clients.reduce((sum, client) => sum + (client.visits || 0), 0)}</strong>
           </article>
         </div>
       </article>
 
       <section className="clients-primary-grid">
         <article className="card">
-          <h2>Ajouter un client</h2>
+          <h2 className="section-heading">Nouveau client</h2>
           <form className="form" onSubmit={createClient}>
             <input
               placeholder="Nom complet"
@@ -504,7 +504,7 @@ export function ClientsPage({ auth }) {
             <div className="row wrap">
               <input
                 className="grow"
-                placeholder="Telephone"
+                placeholder="Téléphone"
                 value={form.phone}
                 onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
               />
@@ -531,8 +531,8 @@ export function ClientsPage({ auth }) {
         </article>
 
         <article className="card">
-          <h2>Scanner une carte</h2>
-          <p className="muted">Le commerçant scanne le QR pour ajouter automatiquement 1 point.</p>
+          <h2 className="section-heading">Scan QR caisse</h2>
+          <p className="muted">Scan du QR client pour attribuer <strong>1 point</strong> et une visite.</p>
           <div className="scanner-shell">
             <video ref={videoRef} className="scanner" />
             <div className="scanner-overlay" aria-hidden="true">
@@ -545,7 +545,7 @@ export function ClientsPage({ auth }) {
               {scanOn ? "Scan en cours..." : "Scanner maintenant"}
             </button>
             <button type="button" className="secondary" onClick={stopScan}>
-              Stop
+              Arrêter
             </button>
           </div>
           <div className="row">
@@ -572,7 +572,7 @@ export function ClientsPage({ auth }) {
 
       <article className="card">
         <div className="row spread wrap">
-          <h2>Liste des clients</h2>
+          <h2 className="section-heading">Liste des clients</h2>
           <div className="row wrap">
             <input placeholder="Rechercher..." value={search} onChange={(event) => setSearch(event.target.value)} />
             <button type="button" className="secondary" onClick={exportCsv} disabled={isExporting}>
@@ -601,19 +601,19 @@ export function ClientsPage({ auth }) {
           </p>
           <div className="row">
             <button type="button" className="secondary" onClick={() => setPage((prev) => Math.max(1, prev - 1))}>
-              Prev
+              Précédent
             </button>
             <button type="button" onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}>
-              Next
+              Suivant
             </button>
           </div>
         </div>
       </article>
 
       <article className="card">
-        <h2>Fiche client</h2>
+        <h2 className="section-heading">Fiche client</h2>
         {!selectedClient ? (
-          <p className="muted">Choisis un client dans la liste pour voir ses actions utiles.</p>
+          <p className="muted">Sélectionne un client dans la liste pour voir les actions et l’historique.</p>
         ) : (
           <>
             <div className="detail-header">
@@ -636,7 +636,7 @@ export function ClientsPage({ auth }) {
               <button
                 type="button"
                 className="secondary"
-                onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR copie")}
+                onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR copié")}
               >
                 Copier QR
               </button>
@@ -662,31 +662,30 @@ export function ClientsPage({ auth }) {
             </div>
 
             <article className="card inner">
-              <h3>Generateur FidelioGen : quoi copier ?</h3>
+              <h3 className="section-heading">FidelioGen — valeurs à copier</h3>
               <p className="muted generator-intro">
-                Tout ce qu'il faut copier pour creer la carte de <strong>{selectedClient.full_name}</strong> est juste
-                ici.
+                Identifiants pour générer la carte visuelle de <strong>{selectedClient.full_name}</strong>.
               </p>
               <div className="generator-steps">
                 <div className="generator-step">
                   <span className="generator-step-number">1</span>
                   <div>
                     <strong>Ouvre FidelioGen</strong>
-                    <p>Utilise le generateur visuel pour preparer la carte.</p>
+                    <p>Génère le visuel de la carte avec tes réglages.</p>
                   </div>
                 </div>
                 <div className="generator-step">
                   <span className="generator-step-number">2</span>
                   <div>
-                    <strong>Colle les identifiants</strong>
-                    <p>Renseigne l'ID commercant puis l'ID client.</p>
+                    <strong>Identifiants</strong>
+                    <p>Colle l’ID commerçant puis l’ID client si le générateur les sépare.</p>
                   </div>
                 </div>
                 <div className="generator-step">
                   <span className="generator-step-number">3</span>
                   <div>
-                    <strong>Ou colle directement le QR</strong>
-                    <p>Si le generateur demande une seule valeur QR, utilise le texte complet.</p>
+                    <strong>QR complet</strong>
+                    <p>Si un seul champ QR est demandé, colle la valeur complète ci-dessous.</p>
                   </div>
                 </div>
               </div>
@@ -697,10 +696,10 @@ export function ClientsPage({ auth }) {
                   <button
                     type="button"
                     className="secondary"
-                    onClick={() => copyText(merchantId, "ID commercant copie")}
+                    onClick={() => copyText(merchantId, "ID commerçant copié")}
                     disabled={!merchantId}
                   >
-                    Copier ID commercant
+                    Copier ID commerçant
                   </button>
                 </div>
                 <div className="generator-copy-card">
@@ -709,7 +708,7 @@ export function ClientsPage({ auth }) {
                   <button
                     type="button"
                     className="secondary"
-                    onClick={() => copyText(selectedClient.id, "ID client copie")}
+                    onClick={() => copyText(selectedClient.id, "ID client copié")}
                   >
                     Copier ID client
                   </button>
@@ -720,15 +719,14 @@ export function ClientsPage({ auth }) {
                   <button
                     type="button"
                     className="secondary"
-                    onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR complet copie")}
+                    onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR copié")}
                   >
                     Copier texte QR
                   </button>
                 </div>
               </div>
               <p className="muted generator-note">
-                Astuce : si FidelioGen affiche deux champs separes, utilise les deux IDs. S'il affiche un seul champ QR,
-                colle le texte QR complet.
+                Astuce : deux champs séparés → utilise les deux IDs ; un seul champ → texte QR complet.
               </p>
             </article>
 
@@ -740,12 +738,19 @@ export function ClientsPage({ auth }) {
                 <div className="timeline-item" key={entry.id}>
                   <strong>+{entry.points_added} pts</strong>
                   <p>
-                    canal: {entry.channel} · {new Date(entry.created_at).toLocaleString("fr-FR")}
+                    {entry.channel === "qr"
+                      ? "Scan QR"
+                      : entry.channel === "manual"
+                        ? "Ajout manuel"
+                        : entry.channel === "phone"
+                          ? "Téléphone"
+                          : entry.channel}{" "}
+                    · {new Date(entry.created_at).toLocaleString("fr-FR")}
                   </p>
-                  {entry.reward_unlocked ? <span className="badge">Recompense debloquee</span> : null}
+                  {entry.reward_unlocked ? <span className="badge">Récompense débloquée</span> : null}
                 </div>
               ))}
-              {history.length === 0 && !isHistoryLoading ? <p>Aucun evenement pour ce client.</p> : null}
+              {history.length === 0 && !isHistoryLoading ? <p className="muted">Aucun mouvement pour ce client.</p> : null}
             </div>
           </>
         )}
