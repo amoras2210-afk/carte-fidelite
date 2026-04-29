@@ -7,6 +7,7 @@ const { DEFAULT_CARD_DESIGN, toCardDesign } = require("../utils/cardDesign");
 
 const updateSettingsSchema = z.object({
   businessName: z.string().min(2).max(120),
+  reviewUrl: z.string().url().max(500).optional().or(z.literal("")),
   brandColor: z.string().min(4).max(32),
   rewardThreshold: z.number().int().min(1).max(1000),
   rewardLabel: z.string().min(2).max(80),
@@ -30,7 +31,7 @@ async function getSettings(req, res, next) {
   try {
     const merchantId = req.auth.merchantId;
     const result = await db.query(
-      `SELECT m.id, m.business_name, m.email, m.brand_color, m.plan_mrr_eur,
+      `SELECT m.id, m.business_name, m.email, m.brand_color, m.plan_mrr_eur, m.review_url,
               m.card_tagline, m.card_theme, m.card_style, m.card_bg_color, m.card_bg2_color,
               m.card_accent_color, m.card_accent2_color, m.card_text_color, m.card_text_muted_color,
               m.card_stamp_color, m.card_logo_url,
@@ -49,6 +50,7 @@ async function getSettings(req, res, next) {
       data: {
         merchantId: row.id,
         businessName: row.business_name,
+        reviewUrl: row.review_url || "",
         email: row.email,
         brandColor: row.brand_color,
         rewardThreshold: row.reward_threshold,
@@ -67,9 +69,10 @@ async function updateSettings(req, res, next) {
     const merchantId = req.auth.merchantId;
     const payload = updateSettingsSchema.parse(req.body);
 
-    await db.query("UPDATE merchants SET business_name = $1, brand_color = $2 WHERE id = $3", [
+    await db.query("UPDATE merchants SET business_name = $1, brand_color = $2, review_url = $3 WHERE id = $4", [
       payload.businessName,
       payload.brandColor,
+      payload.reviewUrl || null,
       merchantId
     ]);
     await db.query(
@@ -120,6 +123,7 @@ async function updateSettings(req, res, next) {
     return sendSuccess(res, {
       data: {
         businessName: payload.businessName,
+        reviewUrl: payload.reviewUrl || "",
         brandColor: payload.brandColor,
         rewardThreshold: payload.rewardThreshold,
         rewardLabel: payload.rewardLabel,

@@ -5,6 +5,7 @@ import { applyThemePreset, DEFAULT_CARD_DESIGN, resolveCardDesign } from "../lib
 
 const initialState = {
   businessName: "",
+  reviewUrl: "",
   brandColor: "#1f2937",
   rewardThreshold: 10,
   rewardLabel: "1 reward",
@@ -22,6 +23,7 @@ export function SettingsPage({ auth }) {
       .then((response) =>
         setSettings({
           businessName: response.data.businessName,
+          reviewUrl: response.data.reviewUrl || "",
           brandColor: response.data.brandColor,
           rewardThreshold: response.data.rewardThreshold,
           rewardLabel: response.data.rewardLabel,
@@ -41,6 +43,7 @@ export function SettingsPage({ auth }) {
         method: "PUT",
         body: {
           businessName: settings.businessName,
+          reviewUrl: settings.reviewUrl,
           brandColor: settings.brandColor,
           rewardThreshold: Number(settings.rewardThreshold),
           rewardLabel: settings.rewardLabel,
@@ -68,6 +71,12 @@ export function SettingsPage({ auth }) {
           value={settings.brandColor}
           onChange={(event) => setSettings((prev) => ({ ...prev, brandColor: event.target.value }))}
           placeholder="Couleur marque (rgb/hex)"
+        />
+        <input
+          type="url"
+          value={settings.reviewUrl}
+          onChange={(event) => setSettings((prev) => ({ ...prev, reviewUrl: event.target.value }))}
+          placeholder="Lien page d'avis (Google/Facebook/Tripadvisor)"
         />
         <input
           type="number"
