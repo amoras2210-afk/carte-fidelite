@@ -24,7 +24,7 @@ async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merc
     return { scheduled: false, reason: `already_${existing.rows[0].status}` };
   }
 
-  const delay = Number.isFinite(env.reviewRequestDelayMinutes) ? Math.max(1, env.reviewRequestDelayMinutes) : 10;
+  const delay = Number.isFinite(env.reviewRequestDelayMinutes) ? Math.max(1, env.reviewRequestDelayMinutes) : 1;
   const safeUrl = reviewUrl || buildFallbackReviewUrl(merchantName);
   const sendAt = new Date(Date.now() + delay * 60 * 1000);
   await db.query(
@@ -45,6 +45,13 @@ async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merc
       })
     ]
   );
+
+  const delayMs = delay * 60 * 1000;
+  setTimeout(() => {
+    processDueReviewNotifications(20).catch((err) =>
+      console.error("[review-notification-worker] deferred send:", err.message)
+    );
+  }, delayMs + 1500);
 
   return { scheduled: true, sendAt: sendAt.toISOString() };
 }
@@ -111,8 +118,8 @@ function startReviewNotificationWorker() {
   const tick = async () => {
     try {
       await processDueReviewNotifications(20);
-    } catch {
-      // Keep worker resilient; errors are persisted per row.
+    } catch (err) {
+      console.error("[review-notification-worker] tick failed:", err.message || err);
     }
   };
   const interval = setInterval(tick, 60 * 1000);

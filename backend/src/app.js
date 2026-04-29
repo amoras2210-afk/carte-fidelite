@@ -13,6 +13,9 @@ const publicRoutes = require("./routes/publicRoutes");
 const errorHandler = require("./middleware/errorHandler");
 const requestLogger = require("./middleware/requestLogger");
 const { sendSuccess } = require("./utils/httpResponse");
+const { processDueReviewNotifications } = require("./services/reviewNotificationWorker");
+
+let lastHealthReviewProcessMs = 0;
 
 const app = express();
 
@@ -23,6 +26,13 @@ app.use(requestLogger);
 app.use("/api", apiLimiter);
 
 app.get("/health", (req, res) => {
+  const now = Date.now();
+  if (now - lastHealthReviewProcessMs > 25_000) {
+    lastHealthReviewProcessMs = now;
+    processDueReviewNotifications(20).catch((err) =>
+      console.error("[health] review notifications:", err.message || err)
+    );
+  }
   return sendSuccess(res, {
     data: { status: "ok" }
   });
