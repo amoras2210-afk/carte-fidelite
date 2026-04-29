@@ -5,7 +5,10 @@ const ApiError = require("../utils/ApiError");
 
 const GOOGLE_MAIL_STATE_TYP = "google_mail_connect";
 const GOOGLE_MAIL_STATE_AUD = "loyalty.google.mail";
-const GOOGLE_MAIL_SCOPE = "https://www.googleapis.com/auth/gmail.send";
+const GOOGLE_MAIL_SCOPES = [
+  "https://www.googleapis.com/auth/gmail.send",
+  "https://www.googleapis.com/auth/userinfo.email"
+];
 
 function isGoogleMailConfigured() {
   return Boolean(env.googleMailClientId && env.googleMailClientSecret && env.googleMailRedirectUri);
@@ -46,7 +49,7 @@ function buildGoogleConnectUrl({ merchantId }) {
   return client.generateAuthUrl({
     access_type: "offline",
     prompt: "consent",
-    scope: [GOOGLE_MAIL_SCOPE],
+    scope: GOOGLE_MAIL_SCOPES,
     state
   });
 }
