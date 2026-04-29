@@ -2,6 +2,7 @@ const db = require("../config/db");
 const { sendSuccess } = require("../utils/httpResponse");
 const { verifyCardToken } = require("../utils/cardToken");
 const ApiError = require("../utils/ApiError");
+const { toCardDesign } = require("../utils/cardDesign");
 
 async function getPublicCard(req, res, next) {
   try {
@@ -16,6 +17,17 @@ async function getPublicCard(req, res, next) {
          m.id AS merchant_id,
          m.business_name,
          m.brand_color,
+         m.card_tagline,
+         m.card_theme,
+         m.card_style,
+         m.card_bg_color,
+         m.card_bg2_color,
+         m.card_accent_color,
+         m.card_accent2_color,
+         m.card_text_color,
+         m.card_text_muted_color,
+         m.card_stamp_color,
+         m.card_logo_url,
          ls.reward_threshold,
          ls.reward_label,
          c.id AS client_id,
@@ -44,7 +56,8 @@ async function getPublicCard(req, res, next) {
           businessName: row.business_name,
           brandColor: row.brand_color,
           rewardThreshold: row.reward_threshold,
-          rewardLabel: row.reward_label
+          rewardLabel: row.reward_label,
+          cardDesign: toCardDesign(row)
         },
         client: {
           id: row.client_id,

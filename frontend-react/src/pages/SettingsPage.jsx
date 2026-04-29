@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { apiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
+import { applyThemePreset, DEFAULT_CARD_DESIGN, resolveCardDesign } from "../lib/cardDesign";
 
 const initialState = {
   businessName: "",
   brandColor: "#1f2937",
   rewardThreshold: 10,
   rewardLabel: "1 reward",
-  planMrrEur: 49
+  planMrrEur: 49,
+  cardDesign: DEFAULT_CARD_DESIGN
 };
 
 export function SettingsPage({ auth }) {
@@ -23,7 +25,8 @@ export function SettingsPage({ auth }) {
           brandColor: response.data.brandColor,
           rewardThreshold: response.data.rewardThreshold,
           rewardLabel: response.data.rewardLabel,
-          planMrrEur: response.data.planMrrEur ?? 49
+          planMrrEur: response.data.planMrrEur ?? 49,
+          cardDesign: resolveCardDesign(response.data.cardDesign)
         })
       )
       .catch((error) => showToast(error.message, "error"))
@@ -41,7 +44,8 @@ export function SettingsPage({ auth }) {
           brandColor: settings.brandColor,
           rewardThreshold: Number(settings.rewardThreshold),
           rewardLabel: settings.rewardLabel,
-          planMrrEur: Number(settings.planMrrEur)
+          planMrrEur: Number(settings.planMrrEur),
+          cardDesign: settings.cardDesign
         }
       });
       showToast("Settings sauvegardes", "success");
@@ -86,6 +90,162 @@ export function SettingsPage({ auth }) {
             onChange={(event) => setSettings((prev) => ({ ...prev, planMrrEur: event.target.value }))}
           />
         </label>
+        <div className="card inner">
+          <div className="row spread wrap">
+            <div>
+              <h3>Design de la carte client</h3>
+              <p className="muted">
+                Ce design sera applique automatiquement a toutes les cartes client envoyees depuis Loyalty Pro.
+              </p>
+            </div>
+            <span className="badge info-badge">1 design pour tout le commerce</span>
+          </div>
+          <div className="form">
+            <input
+              value={settings.cardDesign.tagline}
+              onChange={(event) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  cardDesign: { ...prev.cardDesign, tagline: event.target.value }
+                }))
+              }
+              placeholder="Sous-titre de la carte"
+            />
+            <input
+              value={settings.cardDesign.logoUrl}
+              onChange={(event) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  cardDesign: { ...prev.cardDesign, logoUrl: event.target.value }
+                }))
+              }
+              placeholder="Logo URL (https://...)"
+            />
+            <div className="row wrap">
+              <label className="grow">
+                Palette
+                <select
+                  value={settings.cardDesign.theme}
+                  onChange={(event) => {
+                    const theme = event.target.value;
+                    const preset = applyThemePreset(theme);
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: {
+                        ...prev.cardDesign,
+                        ...(preset || {}),
+                        theme
+                      }
+                    }));
+                  }}
+                >
+                  <option value="gold">Or premium</option>
+                  <option value="night">Bleu nuit</option>
+                  <option value="forest">Foret</option>
+                  <option value="rose">Rose</option>
+                  <option value="slate">Ardoise claire</option>
+                  <option value="ocean">Ocean</option>
+                  <option value="custom">Personnalise</option>
+                </select>
+              </label>
+              <label className="grow">
+                Style
+                <select
+                  value={settings.cardDesign.style}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, style: event.target.value }
+                    }))
+                  }
+                >
+                  <option value="modern">Elegant</option>
+                  <option value="minimal">Epure</option>
+                  <option value="bold">Contraste</option>
+                </select>
+              </label>
+            </div>
+            <div className="design-color-grid">
+              <label>
+                Fond
+                <input
+                  type="color"
+                  value={settings.cardDesign.bgColor}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, bgColor: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Fond 2
+                <input
+                  type="color"
+                  value={settings.cardDesign.bg2Color}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, bg2Color: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Accent
+                <input
+                  type="color"
+                  value={settings.cardDesign.accentColor}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, accentColor: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Accent 2
+                <input
+                  type="color"
+                  value={settings.cardDesign.accent2Color}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, accent2Color: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Texte
+                <input
+                  type="color"
+                  value={settings.cardDesign.textColor}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, textColor: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+              <label>
+                Couleur tampons
+                <input
+                  value={settings.cardDesign.stampColor}
+                  onChange={(event) =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      cardDesign: { ...prev.cardDesign, stampColor: event.target.value, theme: "custom" }
+                    }))
+                  }
+                />
+              </label>
+            </div>
+          </div>
+        </div>
         <button type="submit">Sauvegarder</button>
       </form>
     </article>

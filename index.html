@@ -176,6 +176,30 @@
         </div>
       </div>
 
+      <div class="loyalty-link-section" id="loyaltyLinkSection" style="display:none">
+        <h3 class="loyalty-link-title">Lien carte client (Loyalty Pro)</h3>
+        <p class="preview-lede">
+          Quand tu ouvres FidelioGen depuis Loyalty Pro, ce lien est déjà prêt pour ce client.
+        </p>
+        <div class="loyalty-link-row">
+          <input
+            id="publicCardLinkInput"
+            type="text"
+            readonly
+            placeholder="Lien en attente…"
+            aria-label="Lien carte client"
+          />
+          <div class="loyalty-link-actions">
+            <button type="button" class="btn-secondary" id="btnCopyPublicCardLink">
+              Copier
+            </button>
+            <button type="button" class="btn-primary" id="btnOpenPublicCardLink">
+              Ouvrir
+            </button>
+          </div>
+        </div>
+      </div>
+
       <div class="card-stage">
         <div class="card-stage-glow" aria-hidden="true"></div>
         <canvas id="cardCanvas" width="720" height="420"></canvas>

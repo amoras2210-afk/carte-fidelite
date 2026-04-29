@@ -690,6 +690,118 @@
   }
 
   /* ──────────────────────────────────────────
+     DEEPLINK PARAMS (Loyalty Pro -> FidelioGen)
+     - token -> affiche le lien carte client
+     - qrMerchant/qrClient -> pré-remplit le QR caisse
+     - design basics (theme/style + colors + texte)
+  ────────────────────────────────────────── */
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = (params.get("token") || "").trim();
+
+  const setValue = (inputEl, value) => {
+    if (!inputEl) return;
+    if (value === undefined || value === null) return;
+    const s = String(value);
+    if (!s.trim()) return;
+    inputEl.value = s;
+  };
+
+  const setToggleActive = (groupId, value) => {
+    const group = $(groupId);
+    if (!group) return;
+    group.querySelectorAll(".toggle-btn").forEach((b) => {
+      const isActive = String(b.dataset.value) === String(value);
+      b.classList.toggle("active", isActive);
+      b.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  };
+
+  const setThemeActive = (theme) => {
+    if (!theme) return;
+    document.querySelectorAll(".theme-swatch").forEach((b) => {
+      const isActive = b.dataset.theme === theme;
+      b.classList.toggle("active", isActive);
+      b.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+    currentTheme = theme;
+    $('customColorFields').style.display = currentTheme === 'custom' ? 'block' : 'none';
+  };
+
+  // Prefill: commerce/client identity + card content
+  setValue(inputs.shopName, params.get("shopName"));
+  setValue(inputs.tagline, params.get("tagline"));
+  setValue(inputs.cardHolder, params.get("cardHolder"));
+
+  // QR compatibility with Loyalty Pro scan: merchant:client:any
+  setValue(inputs.qrMerchant, params.get("qrMerchant"));
+  setValue(inputs.qrClient, params.get("qrClient"));
+
+  setValue(inputs.totalStamps, params.get("totalStamps"));
+  setValue(inputs.currentStamps, params.get("currentStamps"));
+  setValue(inputs.rewardText, params.get("rewardText"));
+  setValue(inputs.expiryDate, params.get("expiryDate"));
+
+  // Program + style toggles
+  const program = (params.get("program") || "").trim();
+  if (program) {
+    currentProgram = program;
+    setToggleActive("programType", program);
+  }
+
+  const cardStyleParam = (params.get("cardStyle") || "").trim();
+  if (cardStyleParam) {
+    currentStyle = cardStyleParam;
+    setToggleActive("cardStyle", cardStyleParam);
+  }
+
+  // Theme palette
+  const themeParam = (params.get("theme") || "").trim();
+  if (themeParam) {
+    setThemeActive(themeParam);
+  }
+
+  // If custom theme: set custom color inputs (FidelioGen expects hex values for custom palette)
+  if (currentTheme === "custom") {
+    setValue(inputs.colBg, params.get("colBg"));
+    setValue(inputs.colAccent, params.get("colAccent"));
+    setValue(inputs.colText, params.get("colText"));
+    setValue(inputs.colStamp, params.get("colStamp"));
+  }
+
+  // Public card link for the client (computed from token)
+  if (urlToken) {
+    const origin = window.location.origin;
+    const publicCardLink = `${origin}/card?token=${encodeURIComponent(urlToken)}`;
+
+    const section = $("loyaltyLinkSection");
+    const input = $("publicCardLinkInput");
+    const btnCopy = $("btnCopyPublicCardLink");
+    const btnOpen = $("btnOpenPublicCardLink");
+
+    if (section) section.style.display = "block";
+    if (input) input.value = publicCardLink;
+
+    if (btnCopy && input) {
+      btnCopy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(publicCardLink);
+          toast("Lien carte copié.");
+        } catch {
+          toast("Copie impossible. Sélectionne le lien manuellement.");
+          input.focus();
+          input.select();
+        }
+      });
+    }
+
+    if (btnOpen) {
+      btnOpen.addEventListener("click", () => {
+        window.open(publicCardLink, "_blank", "noopener,noreferrer");
+      });
+    }
+  }
+
+  /* ──────────────────────────────────────────
      INIT
   ────────────────────────────────────────── */
   const today = new Date();

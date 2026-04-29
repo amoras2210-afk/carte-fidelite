@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
+import { resolveCardDesign } from "../lib/cardDesign";
 
 function buildQrImageUrl(payload) {
   const size = 240;
@@ -61,6 +62,22 @@ export function PublicCardPage() {
     }
   };
 
+  const cardDesign = resolveCardDesign(data?.merchant?.cardDesign);
+  const rewardThreshold = Number(data?.merchant?.rewardThreshold || 10);
+  const currentPoints = Number(data?.client?.points || 0);
+  const progressRatio = Math.max(0, Math.min(1, currentPoints / rewardThreshold));
+  const progressPercent = Math.round(progressRatio * 100);
+  const stamps = Array.from({ length: rewardThreshold }, (_, index) => index < currentPoints);
+  const cardVars = {
+    "--card-bg": cardDesign.bgColor,
+    "--card-bg2": cardDesign.bg2Color,
+    "--card-accent": cardDesign.accentColor,
+    "--card-accent2": cardDesign.accent2Color,
+    "--card-text": cardDesign.textColor,
+    "--card-text-muted": cardDesign.textMutedColor,
+    "--card-stamp": cardDesign.stampColor
+  };
+
   if (!token) {
     return (
       <main className="public-shell">
@@ -87,27 +104,72 @@ export function PublicCardPage() {
       </header>
 
       <section
-        className="public-card"
-        style={{
-          borderColor: data?.merchant?.brandColor ? "rgba(0,0,0,0)" : undefined
-        }}
+        className={`public-card public-card-${cardDesign.style}`}
+        style={cardVars}
       >
         {isLoading ? <p>Chargement...</p> : null}
         {!isLoading && data ? (
           <>
-            <div className="public-hero">
-              <div>
-                <h1 className="public-title">{data.client.fullName}</h1>
-                <p className="muted">
-                  {data.client.points} points · Seuil {data.merchant.rewardThreshold}
-                </p>
+            <div className="public-card-glow" aria-hidden="true" />
+            <div className="public-card-noise" aria-hidden="true" />
+            <div className="public-hero premium">
+              <div className="public-brand-lockup">
+                <span className="public-chip">FIDELITE</span>
+                <h1 className="public-title">{data.merchant.businessName}</h1>
+                <p className="public-subtitle">{cardDesign.tagline || "Carte client digitale"}</p>
               </div>
-              <span className="public-pill">Gratuit (PWA)</span>
+              <div className="public-logo-wrap">
+                {cardDesign.logoUrl ? (
+                  <img className="public-logo" src={cardDesign.logoUrl} alt={data.merchant.businessName} />
+                ) : (
+                  <span className="public-logo-fallback">{data.merchant.businessName.slice(0, 1)}</span>
+                )}
+              </div>
             </div>
 
-            <div className="public-qr">
-              <img src={buildQrImageUrl(data.qrPayload)} alt="QR caisse" width="240" height="240" />
-              <p className="muted">A presenter au commerçant a chaque passage.</p>
+            <div className="public-card-main">
+              <div className="public-copy-column">
+                <div className="public-client-block">
+                  <p className="public-label">Titulaire</p>
+                  <strong>{data.client.fullName}</strong>
+                  <p className="public-meta">
+                    {data.client.points} points · {data.client.visits} visites
+                  </p>
+                </div>
+
+                <div className="public-progress-card">
+                  <div className="row spread">
+                    <span className="public-label">Progression</span>
+                    <strong>{progressPercent}%</strong>
+                  </div>
+                  <div className="public-progress-track">
+                    <span className="public-progress-fill" style={{ width: `${progressPercent}%` }} />
+                  </div>
+                  <p className="public-meta">
+                    {currentPoints} / {rewardThreshold} {rewardThreshold > 1 ? "points" : "point"} pour {data.merchant.rewardLabel}
+                  </p>
+                </div>
+
+                <div className="public-stamps">
+                  {stamps.map((filled, index) => (
+                    <span key={`stamp-${index}`} className={`public-stamp ${filled ? "filled" : ""}`}>
+                      {filled ? "★" : " "}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="public-reward-note">
+                  <strong>Recompense</strong>
+                  <p>{data.merchant.rewardLabel}</p>
+                </div>
+              </div>
+
+              <div className="public-qr-panel">
+                <div className="public-qr">
+                  <img src={buildQrImageUrl(data.qrPayload)} alt="QR caisse" width="220" height="220" />
+                  <p className="public-qr-caption">A presenter au commercant a chaque passage.</p>
+                </div>
+              </div>
             </div>
 
             <div className="public-actions">

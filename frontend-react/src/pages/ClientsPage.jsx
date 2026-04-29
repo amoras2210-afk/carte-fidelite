@@ -249,6 +249,61 @@ export function ClientsPage({ auth }) {
     }
   };
 
+  const openFideliogenForClient = useCallback(async () => {
+    if (!selectedClient) return;
+    if (isBusy) return;
+    if (!merchantId) {
+      showToast("Reconnecte-toi pour afficher ton ID commercant.", "error");
+      return;
+    }
+
+    setIsBusy(true);
+    try {
+      const tokenResp = await apiRequest(`/clients/${selectedClient.id}/card-token`, {
+        token: auth.token,
+        method: "POST"
+      });
+      const settingsResp = await apiRequest("/settings", { token: auth.token });
+
+      const settings = settingsResp.data || {};
+      const cardDesign = settings.cardDesign || {};
+
+      const params = new URLSearchParams();
+      params.set("token", tokenResp.data.token);
+      params.set("qrMerchant", String(merchantId));
+      params.set("qrClient", String(selectedClient.id));
+
+      params.set("shopName", settings.businessName || "");
+      params.set("tagline", cardDesign.tagline || "");
+      params.set("cardHolder", selectedClient.full_name || "");
+
+      params.set("totalStamps", String(settings.rewardThreshold ?? selectedClient.reward_threshold ?? 10));
+      params.set("currentStamps", String(selectedClient.points ?? 0));
+      params.set("rewardText", settings.rewardLabel || "Récompense");
+
+      params.set("program", "points");
+      params.set("theme", cardDesign.theme || "gold");
+      params.set("cardStyle", cardDesign.style || "modern");
+
+      // Pour le mode "custom" du generateur : il faut des couleurs hex.
+      // Ici, on mappe au mieux avec les couleurs disponibles (stampColor est parfois en rgba dans la DB).
+      if (cardDesign.theme === "custom") {
+        params.set("colBg", cardDesign.bgColor || "#1a1208");
+        params.set("colAccent", cardDesign.accentColor || "#c9a84c");
+        params.set("colText", cardDesign.textColor || "#fdf6e3");
+        params.set("colStamp", cardDesign.accentColor || "#c9a84c");
+      }
+
+      const generatorUrl = `${window.location.origin}/fideliogen/?${params.toString()}`;
+      window.open(generatorUrl, "_blank", "noopener,noreferrer");
+      showToast("FidélioGen ouvert avec la carte pre-remplie.", "success");
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setIsBusy(false);
+    }
+  }, [auth.token, isBusy, merchantId, selectedClient, showToast]);
+
   const handleCsvFile = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -577,6 +632,14 @@ export function ClientsPage({ auth }) {
               </button>
               <button type="button" className="secondary" onClick={() => loadPublicCardLink(selectedClient)}>
                 Copier lien carte
+              </button>
+              <button
+                type="button"
+                className="secondary"
+                disabled={isBusy || !merchantId}
+                onClick={() => openFideliogenForClient()}
+              >
+                Ouvrir FidelioGen (carte pre-remplie)
               </button>
               <button
                 type="button"

@@ -397,10 +397,13 @@ pre {
 }
 
 .public-card {
-  background: rgba(255, 255, 255, 0.06);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--card-bg, #1a1208), var(--card-bg2, #241a09));
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 16px;
-  padding: 16px;
+  border-radius: 24px;
+  padding: 20px;
+  color: var(--card-text, #fdf6e3);
 }
 
 .public-hero {
@@ -411,10 +414,35 @@ pre {
   margin-bottom: 12px;
 }
 
+.public-hero.premium {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 18px;
+}
+
+.public-card-glow {
+  position: absolute;
+  width: 240px;
+  height: 240px;
+  right: -80px;
+  top: -80px;
+  border-radius: 999px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--card-accent, #c9a84c) 26%, transparent) 0%, transparent 68%);
+}
+
+.public-card-noise {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 28%),
+    radial-gradient(circle at bottom right, rgba(255, 255, 255, 0.05), transparent 26%);
+  pointer-events: none;
+}
+
 .public-title {
   margin: 0;
-  font-size: 22px;
-  color: #fff;
+  font-size: 28px;
+  color: var(--card-text, #fff);
 }
 
 .public-pill {
@@ -430,17 +458,161 @@ pre {
   white-space: nowrap;
 }
 
+.public-brand-lockup {
+  display: grid;
+  gap: 8px;
+}
+
+.public-chip {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--card-text, #fff);
+}
+
+.public-subtitle,
+.public-meta,
+.public-qr-caption {
+  margin: 0;
+  color: var(--card-text-muted, rgba(255, 255, 255, 0.7));
+}
+
+.public-logo-wrap {
+  display: grid;
+  place-items: center;
+}
+
+.public-logo,
+.public-logo-fallback {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.public-logo {
+  object-fit: cover;
+}
+
+.public-logo-fallback {
+  display: grid;
+  place-items: center;
+  color: var(--card-text, #fff);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.public-card-main {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1.2fr 240px;
+  gap: 18px;
+  align-items: center;
+}
+
+.public-copy-column {
+  display: grid;
+  gap: 14px;
+}
+
+.public-label {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--card-text-muted, rgba(255, 255, 255, 0.7));
+}
+
+.public-client-block strong,
+.public-reward-note strong {
+  font-size: 18px;
+}
+
+.public-progress-card,
+.public-reward-note {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.public-progress-track {
+  margin: 10px 0 8px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.public-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--card-accent, #c9a84c), var(--card-accent2, #e8c96a));
+}
+
+.public-stamps {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.public-stamp {
+  aspect-ratio: 1;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--card-stamp, rgba(255, 255, 255, 0.12));
+  color: transparent;
+}
+
+.public-stamp.filled {
+  color: var(--card-accent2, #e8c96a);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.public-qr-panel {
+  display: grid;
+  justify-items: center;
+}
+
 .public-qr {
   display: grid;
   justify-items: center;
   gap: 8px;
-  margin-top: 12px;
+  margin-top: 0;
+  padding: 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .public-qr img {
   border-radius: 14px;
   background: #fff;
   padding: 10px;
+}
+
+.public-card-minimal .public-card-glow,
+.public-card-minimal .public-card-noise {
+  display: none;
+}
+
+.public-card-bold .public-progress-card,
+.public-card-bold .public-reward-note,
+.public-card-bold .public-qr {
+  background: rgba(0, 0, 0, 0.18);
 }
 
 .public-foot {
@@ -730,6 +902,12 @@ pre {
   margin: 12px 0 0;
 }
 
+.design-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
 @media (max-width: 900px) {
   .shell {
     grid-template-columns: 1fr;
@@ -782,6 +960,14 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .public-card-main {
+    grid-template-columns: 1fr;
+  }
+
+  .public-stamps {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
   .row {
     flex-wrap: wrap;
   }
@@ -807,6 +993,10 @@ pre {
   }
 
   .generator-copy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .design-color-grid {
     grid-template-columns: 1fr;
   }
 }

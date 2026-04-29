@@ -806,6 +806,56 @@ body {
   .stamp-cell { width: 42px; height: 42px; font-size: 17px; }
 }
 
+/* ── Loyalty Pro link section ── */
+.loyalty-link-section {
+  margin-top: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.loyalty-link-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.loyalty-link-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.loyalty-link-row input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: rgba(0, 0, 0, 0.18);
+  color: var(--text);
+  font-size: 13px;
+}
+
+.loyalty-link-actions {
+  display: flex;
+  gap: 10px;
+}
+
+@media (max-width: 640px) {
+  .loyalty-link-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .loyalty-link-actions {
+    justify-content: stretch;
+  }
+  .loyalty-link-actions button {
+    flex: 1;
+  }
+}
+
 /* ── Footer ── */
 .site-footer {
   border-top: 1px solid var(--border);
