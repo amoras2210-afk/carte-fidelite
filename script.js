@@ -627,6 +627,7 @@
     // Synchronise le design avec Loyalty Pro, puis affiche le lien digital.
     // (si on a bien recu un token de design et une base API)
     let designSaved = false;
+    let designError = "";
     try {
       const apiBase = params.get("apiBase") || "";
       const designToken = params.get("designToken") || "";
@@ -658,10 +659,22 @@
             body: JSON.stringify(payload)
           }
         );
-        if (resp.ok) designSaved = true;
+        if (resp.ok) {
+          designSaved = true;
+        } else {
+          let apiMsg = "";
+          try {
+            const payload = await resp.json();
+            apiMsg = payload?.error?.message || "";
+          } catch {
+            // ignore parse errors
+          }
+          designError = apiMsg || `HTTP ${resp.status}`;
+        }
       }
-    } catch {
+    } catch (err) {
       // On ne bloque pas l'affichage du lien : on veut que le commerçant ait toujours au moins le lien.
+      designError = err?.message || "sauvegarde indisponible";
     }
 
     try {
@@ -670,7 +683,11 @@
       /* ignore */
     }
 
-    toast(designSaved ? "Carte digitale prete (design sauvegarde)." : "Carte generée. Lien client disponible.");
+    toast(
+      designSaved
+        ? "Carte digitale prete (design sauvegarde)."
+        : `Carte generee. Lien client disponible (design non sauvegarde: ${designError || "erreur inconnue"}).`
+    );
   });
 
   /* ──────────────────────────────────────────
