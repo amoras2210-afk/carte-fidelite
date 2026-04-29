@@ -14,10 +14,21 @@ function buildQrImageUrl(payload) {
 
 export function PublicCardPage() {
   const [params] = useSearchParams();
-  const token = params.get("token") || "";
+  const tokenFromParams = params.get("token") || "";
+  const token = useMemo(() => {
+    if (tokenFromParams) return tokenFromParams;
+    if (typeof window === "undefined") return "";
+    // Fallback iOS/shortcuts: parfois le token est perdu.
+    return localStorage.getItem("publicCardToken") || "";
+  }, [tokenFromParams]);
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (tokenFromParams) localStorage.setItem("publicCardToken", tokenFromParams);
+  }, [tokenFromParams]);
 
   const cardUrl = useMemo(() => {
     if (typeof window === "undefined") return "";

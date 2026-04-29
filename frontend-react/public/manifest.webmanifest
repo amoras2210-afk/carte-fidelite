@@ -1,8 +1,8 @@
 {
   "name": "Loyalty Pro",
   "short_name": "Loyalty",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/card",
+  "scope": "/card",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#0f172a",
