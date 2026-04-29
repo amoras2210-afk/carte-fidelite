@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Créez une carte de fidélité visuelle avec QR compatible Loyalty Pro — export PNG haute définition." />
+  <meta name="description" content="Studio graphique pour cartes de fidélité digitales — QR compatible Loyalty Pro, export PNG haute définition." />
   <meta name="theme-color" content="#09090b" />
-  <title>FidélioGen — Studio cartes de fidélité</title>
+  <title>FidélioGen · Cartes fidélité · Loyalty Pro</title>
   <link rel="stylesheet" href="style_1.css" />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
@@ -21,12 +21,12 @@
         </span>
         <div class="logo-stack">
           <span class="logo-text">FidélioGen</span>
-          <span class="logo-badge">Studio cartes professionnelles</span>
+          <span class="logo-badge">Studio graphique</span>
         </div>
       </div>
       <div class="header-right">
-        <span class="header-pill">Compatible Loyalty Pro</span>
-        <p class="header-sub">QR standard caisse · Export PNG · 720×420 px</p>
+        <span class="header-pill">Loyalty Pro</span>
+        <p class="header-sub">QR caisse · PNG 720×420 · Prêt pour impression</p>
       </div>
     </div>
   </header>
@@ -63,7 +63,7 @@
           <input type="text" id="qrClient" placeholder="Déduit du titulaire si vide" spellcheck="false" />
         </div>
 
-        <p class="ctrl-hint">Payload QR : <strong>commerce:client:unités</strong> — identique au scan Loyalty Pro (caisse ou app).</p>
+        <p class="ctrl-hint">Format QR caisse : <strong>commerce : client : unités</strong> — même logique que Loyalty Pro.</p>
 
         <div class="field">
           <label>Logotype (PNG, JPG, SVG)</label>
@@ -164,22 +164,22 @@
 
       <div class="preview-header">
         <div class="preview-heading">
-          <h2 class="preview-title">Aperçu fidèle à l’export</h2>
-          <p class="preview-lede">Rendu pixels à pixels avec le fichier PNG (résolution interne ×2 minimum pour une impression nette).</p>
+          <h2 class="preview-title">Aperçu et export</h2>
+          <p class="preview-lede">Le rendu correspond au fichier PNG exporté (rendu interne haute densité pour un résultat net).</p>
         </div>
         <div class="preview-actions">
-          <button type="button" class="btn-secondary" id="btnCopyCSS">Variables CSS</button>
+          <button type="button" class="btn-secondary" id="btnCopyCSS">Copier les variables CSS</button>
           <button type="button" class="btn-primary" id="btnExport">
             <svg class="btn-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12m0 0l4-4m-4 4l-4-4M5 15v4a2 2 0 002 2h10a2 2 0 002-2v-4"/></svg>
-            Generer la carte
+            Générer la carte PNG
           </button>
         </div>
       </div>
 
-      <div class="loyalty-link-section" id="loyaltyLinkSection" style="display:none">
-        <h3 class="loyalty-link-title">Lien carte client (Loyalty Pro)</h3>
-        <p class="preview-lede">
-          Quand tu ouvres FidelioGen depuis Loyalty Pro, ce lien est déjà prêt pour ce client.
+      <div class="loyalty-link-section surface-panel" id="loyaltyLinkSection" style="display:none">
+        <h3 class="loyalty-link-title">Lien carte client</h3>
+        <p class="preview-lede loyalty-link-lede">
+          Prérempli lorsque tu ouvres FidélioGen depuis Loyalty Pro (même client).
         </p>
         <div class="loyalty-link-row">
           <input
@@ -205,9 +205,9 @@
         <canvas id="cardCanvas" width="720" height="420"></canvas>
       </div>
 
-      <div class="stamps-section">
+      <div class="stamps-section surface-panel">
         <div class="stamps-header">
-          <h3 class="stamps-title">Simulation des unités acquises</h3>
+          <h3 class="stamps-title">Unités acquises (simulation)</h3>
           <span class="stamps-count" id="stampsCount">4 / 10</span>
         </div>
         <div class="stamps-grid" id="stampsGrid"></div>
@@ -217,10 +217,10 @@
         </div>
       </div>
 
-      <div class="push-section">
+      <div class="push-section surface-panel">
         <h3 class="push-title">
           <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M10 2a6 6 0 0 1 6 6v1l2 3H2l2-3V8a6 6 0 0 1 6-6z"/><path d="M8 17a2 2 0 0 0 4 0"/></svg>
-          Maquette notification mobile
+          Notification mobile (aperçu)
         </h3>
         <div class="push-composer">
           <div class="field">
@@ -231,7 +231,7 @@
             <label for="pushBody">Message</label>
             <textarea id="pushBody" rows="2">Vous avez cumulé 4 points. Plus que 6 pour votre récompense !</textarea>
           </div>
-          <button type="button" class="btn-primary full-width" id="btnSendPush">Afficher la prévisualisation</button>
+          <button type="button" class="btn-primary full-width" id="btnSendPush">Afficher l’aperçu</button>
         </div>
 
         <div class="push-preview" id="pushPreview" style="display:none">
@@ -258,7 +258,7 @@
 
   <footer class="site-footer">
     <div class="site-footer-inner">
-      <p>FidélioGen — module graphique pour Loyalty Pro. Payload QR conforme au scan terminal de caisse.</p>
+      <p><strong>FidélioGen</strong> · Module graphique Loyalty Pro · QR identique au flux caisse.</p>
     </div>
   </footer>
 

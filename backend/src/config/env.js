@@ -11,6 +11,11 @@ const env = {
   jwtSecret: process.env.JWT_SECRET || "unsafe-dev-secret",
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   appBaseUrl: process.env.APP_BASE_URL || "http://localhost:4000",
+  /** URL publique du frontend (SPA) pour construire les liens /card/:token dans les e-mails */
+  publicFrontendUrl:
+    process.env.PUBLIC_FRONTEND_URL ||
+    process.env.VITE_PUBLIC_FRONTEND_URL ||
+    "http://localhost:5173",
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 15 * 60 * 1000),
   rateLimitMaxRequests: Number(process.env.RATE_LIMIT_MAX_REQUESTS || 150),
   smtpHost: process.env.SMTP_HOST || "",

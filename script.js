@@ -65,6 +65,13 @@
     qrClient:      $('qrClient'),
   };
 
+  /* Query (Loyalty Pro → générateur) : lu une fois au chargement */
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = (params.get("token") || "").trim();
+  const cardUrlParam = (params.get("cardUrl") || "").trim();
+  const publicCardLink =
+    cardUrlParam || (urlToken ? `${window.location.origin}/card/${encodeURIComponent(urlToken)}` : "");
+
   /* ──────────────────────────────────────────
      STATE HELPERS
   ────────────────────────────────────────── */
@@ -684,11 +691,41 @@
       /* ignore */
     }
 
-    toast(
-      designSaved
-        ? "Carte digitale prete (design sauvegarde)."
-        : `Carte generee. Lien client disponible (design non sauvegarde: ${designError || "erreur inconnue"}).`
-    );
+    let mailDelivery = null;
+    try {
+      const apiBaseForMail = (params.get("apiBase") || "").trim();
+      const cardTok = urlToken;
+      if (apiBaseForMail && cardTok) {
+        const sendResp = await fetch(`${apiBaseForMail}/public/send-card-link`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cardToken: cardTok })
+        });
+        const json = await sendResp.json().catch(() => ({}));
+        if (sendResp.ok && json?.data) {
+          mailDelivery = json.data;
+        }
+      }
+    } catch {
+      /* envoi optionnel */
+    }
+
+    const baseToast = designSaved
+      ? "Carte digitale prête — design enregistré dans Loyalty Pro."
+      : `Carte générée. Lien client disponible (design non enregistré : ${designError || "erreur inconnue"}).`;
+
+    let mailSuffix = "";
+    if (mailDelivery?.delivered) {
+      mailSuffix = " Lien envoyé par e-mail au client.";
+    } else if (mailDelivery?.reason === "missing_email") {
+      mailSuffix = " Ajoute un e-mail sur la fiche client pour l’envoi automatique.";
+    } else if (mailDelivery?.reason === "mail_not_configured") {
+      mailSuffix = " Configure Gmail ou SMTP dans Loyalty Pro pour l’envoi automatique.";
+    } else if (mailDelivery?.reason && String(mailDelivery.reason).startsWith("gmail_api:")) {
+      mailSuffix = " E-mail non envoyé (vérifie la connexion Gmail).";
+    }
+
+    toast(baseToast + mailSuffix);
   });
 
   /* ──────────────────────────────────────────
@@ -717,7 +754,7 @@
     notif.offsetHeight;
     notif.style.animation = '';
 
-    toast('Maquette affichée.');
+    toast('Aperçu mis à jour.');
   });
 
   /* Auto-update push body with current points */
@@ -752,13 +789,10 @@
 
   /* ──────────────────────────────────────────
      DEEPLINK PARAMS (Loyalty Pro -> FidelioGen)
-     - token -> affiche le lien carte client
+     - token / cardUrl — déjà chargés en tête de script
      - qrMerchant/qrClient -> pré-remplit le QR caisse
      - design basics (theme/style + colors + texte)
   ────────────────────────────────────────── */
-  const params = new URLSearchParams(window.location.search);
-  const urlToken = (params.get("token") || "").trim();
-  const cardUrlParam = (params.get("cardUrl") || "").trim();
 
   const setValue = (inputEl, value) => {
     if (!inputEl) return;
@@ -830,13 +864,6 @@
     setValue(inputs.colStamp, params.get("colStamp"));
   }
 
-  // Public card link for the client.
-  // Priority:
-  // 1) explicit cardUrl from Loyalty Pro (important when generator is on another domain)
-  // 2) fallback from token on same origin
-  const publicCardLink =
-    cardUrlParam || (urlToken ? `${window.location.origin}/card/${encodeURIComponent(urlToken)}` : "");
-
   function revealLoyaltyLink() {
     const section = $("loyaltyLinkSection");
     const input = $("publicCardLinkInput");
@@ -873,7 +900,7 @@
     }
   }
 
-  // Le lien est affiche uniquement apres clic sur "Generer la carte".
+  // Le lien s’affiche après clic sur « Générer la carte PNG » (si token Loyalty Pro présent).
 
   /* ──────────────────────────────────────────
      INIT

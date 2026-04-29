@@ -205,8 +205,56 @@ async function sendReviewRequestEmail({ merchantId, merchantName, clientEmail, c
   return { delivered: true };
 }
 
+async function sendCardLinkToClientEmail({ merchantId, merchantName, clientEmail, clientName, cardUrl }) {
+  const safeName = String(clientName || "").trim() || "Bonjour";
+  const safeMerchant = merchantNameOrFallback(merchantName, "");
+
+  if (!clientEmail?.trim()) {
+    return { delivered: false, reason: "missing_email" };
+  }
+
+  const subjectLine = `${safeMerchant} — Votre carte de fidélité`;
+  const bodyPlain =
+    `Bonjour ${safeName},\n\n` +
+    "Voici le lien pour consulter votre carte de fidélité digitale :\n\n" +
+    `${cardUrl}\n\n` +
+    `À bientôt,\n${safeMerchant}`;
+
+  const googleAuth = merchantId ? await loadMerchantGoogleMailAuth(merchantId) : null;
+  if (googleAuth) {
+    try {
+      await sendPlainTextViaGmailApi({
+        oauth2Client: googleAuth.oauth2Client,
+        fromEmail: googleAuth.gmailAddress,
+        merchantDisplayName: safeMerchant,
+        toEmail: clientEmail.trim(),
+        subjectLine,
+        bodyPlain
+      });
+      return { delivered: true };
+    } catch (error) {
+      console.error("[notification] Gmail API card link email failed:", error.message || error);
+      return { delivered: false, reason: `gmail_api:${String(error.message || error).slice(0, 500)}` };
+    }
+  }
+
+  if (!transporter) {
+    return { delivered: false, reason: "mail_not_configured" };
+  }
+
+  await transporter.sendMail({
+    from: env.smtpFrom,
+    to: clientEmail.trim(),
+    subject: subjectLine,
+    text: bodyPlain
+  });
+
+  return { delivered: true };
+}
+
 module.exports = {
   sendRewardUnlockedEmail,
   sendCampaignEmail,
-  sendReviewRequestEmail
+  sendReviewRequestEmail,
+  sendCardLinkToClientEmail
 };
