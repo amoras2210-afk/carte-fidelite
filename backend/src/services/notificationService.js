@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const { google } = require("googleapis");
 const env = require("../config/env");
 const db = require("../config/db");
 
@@ -12,28 +13,79 @@ const transporter =
       })
     : null;
 
-async function buildMerchantGoogleTransport(merchantId, merchantName) {
-  if (!merchantId || !env.googleMailClientId || !env.googleMailClientSecret) return null;
+async function loadMerchantGoogleMailAuth(merchantId) {
+  if (!merchantId || !env.googleMailClientId || !env.googleMailClientSecret || !env.googleMailRedirectUri) {
+    return null;
+  }
   const result = await db.query(
     "SELECT google_mail_address, google_mail_refresh_token FROM merchants WHERE id = $1",
     [merchantId]
   );
   const row = result.rows[0];
   if (!row?.google_mail_address || !row?.google_mail_refresh_token) return null;
+
+  const oauth2Client = new google.auth.OAuth2(
+    env.googleMailClientId,
+    env.googleMailClientSecret,
+    env.googleMailRedirectUri
+  );
+  oauth2Client.setCredentials({ refresh_token: row.google_mail_refresh_token });
+
   return {
-    transport: nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        type: "OAuth2",
-        user: row.google_mail_address,
-        clientId: env.googleMailClientId,
-        clientSecret: env.googleMailClientSecret,
-        refreshToken: row.google_mail_refresh_token
-      }
-    }),
-    from: `${merchantNameOrFallback(merchantName, row.google_mail_address)} <${row.google_mail_address}>`,
-    replyTo: row.google_mail_address
+    gmailAddress: row.google_mail_address,
+    oauth2Client
   };
+}
+
+function mimeEncodedWordUtf8(text) {
+  return `=?UTF-8?B?${Buffer.from(String(text), "utf8").toString("base64")}?=`;
+}
+
+function encodeGmailRawMessage(rawString) {
+  return Buffer.from(rawString)
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+}
+
+async function sendReviewViaGmailApi({
+  oauth2Client,
+  fromEmail,
+  merchantDisplayName,
+  clientEmail,
+  clientName,
+  reviewUrl
+}) {
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  const safeReviewUrl = reviewUrl || "https://www.google.com/maps";
+  const body =
+    `Bonjour ${clientName},\n\n` +
+    "Merci pour votre visite. Si vous avez 30 secondes, pouvez-vous nous laisser un avis ?\n\n" +
+    `${safeReviewUrl}\n\n` +
+    "Merci !";
+
+  const subject = `${merchantDisplayName} - Votre avis compte`;
+  const safeDisplay = merchantNameOrFallback(merchantDisplayName, fromEmail);
+  const fromHeader = /^[\x00-\x7F]+$/.test(safeDisplay)
+    ? `${safeDisplay} <${fromEmail}>`
+    : `${mimeEncodedWordUtf8(safeDisplay)} <${fromEmail}>`;
+
+  const headerBlock = [
+    `From: ${fromHeader}`,
+    `To: ${clientEmail}`,
+    `Subject: ${mimeEncodedWordUtf8(subject)}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=UTF-8"
+  ].join("\r\n");
+  const raw = `${headerBlock}\r\n\r\n${body}\r\n`;
+
+  await gmail.users.messages.send({
+    userId: "me",
+    requestBody: {
+      raw: encodeGmailRawMessage(raw)
+    }
+  });
 }
 
 function merchantNameOrFallback(merchantName, fallback) {
@@ -75,16 +127,32 @@ async function sendReviewRequestEmail({ merchantId, merchantName, clientEmail, c
   if (!clientEmail) {
     return { delivered: false, reason: "missing_email" };
   }
-  const googleSender = await buildMerchantGoogleTransport(merchantId, merchantName);
-  const senderTransport = googleSender?.transport || transporter;
-  if (!senderTransport) {
+
+  const googleAuth = await loadMerchantGoogleMailAuth(merchantId);
+  if (googleAuth) {
+    try {
+      await sendReviewViaGmailApi({
+        oauth2Client: googleAuth.oauth2Client,
+        fromEmail: googleAuth.gmailAddress,
+        merchantDisplayName: merchantName,
+        clientEmail,
+        clientName,
+        reviewUrl
+      });
+      return { delivered: true };
+    } catch (error) {
+      console.error("[notification] Gmail API review email failed:", error.message || error);
+      return { delivered: false, reason: `gmail_api:${String(error.message || error).slice(0, 500)}` };
+    }
+  }
+
+  if (!transporter) {
     return { delivered: false, reason: "smtp_not_configured_or_missing_email" };
   }
 
   const safeReviewUrl = reviewUrl || "https://www.google.com/maps";
-  await senderTransport.sendMail({
-    from: googleSender?.from || env.smtpFrom,
-    replyTo: googleSender?.replyTo || undefined,
+  await transporter.sendMail({
+    from: env.smtpFrom,
     to: clientEmail,
     subject: `${merchantName} - Votre avis compte`,
     text:
