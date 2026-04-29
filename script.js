@@ -643,8 +643,7 @@
           textColor: t.text,
           textMutedColor: t.text2,
           stampColor: t.stamp,
-          // Evite l'echec si la dataURL est trop grosse
-          logoUrl: logoDataUrl && logoDataUrl.length <= 20000 ? logoDataUrl : ""
+          logoUrl: logoDataUrl || ""
         };
         const payload = {
           businessName: inputs.shopName?.value || "",
@@ -818,7 +817,7 @@
   // 1) explicit cardUrl from Loyalty Pro (important when generator is on another domain)
   // 2) fallback from token on same origin
   const publicCardLink =
-    cardUrlParam || (urlToken ? `${window.location.origin}/card?token=${encodeURIComponent(urlToken)}` : "");
+    cardUrlParam || (urlToken ? `${window.location.origin}/card/${encodeURIComponent(urlToken)}` : "");
 
   function revealLoyaltyLink() {
     const section = $("loyaltyLinkSection");

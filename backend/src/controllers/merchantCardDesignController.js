@@ -17,7 +17,7 @@ const cardDesignSchema = z.object({
   textColor: z.string().min(4).max(32).default(DEFAULT_CARD_DESIGN.textColor),
   textMutedColor: z.string().max(40).default(DEFAULT_CARD_DESIGN.textMutedColor),
   stampColor: z.string().max(40).default(DEFAULT_CARD_DESIGN.stampColor),
-  logoUrl: z.string().max(20000).default(DEFAULT_CARD_DESIGN.logoUrl)
+  logoUrl: z.string().max(2000000).default(DEFAULT_CARD_DESIGN.logoUrl)
 });
 
 const updateMerchantCardDesignSchema = z.object({

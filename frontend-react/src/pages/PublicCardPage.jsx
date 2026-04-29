@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 import { resolveCardDesign } from "../lib/cardDesign";
@@ -13,22 +13,26 @@ function buildQrImageUrl(payload) {
 }
 
 export function PublicCardPage() {
+  const routeParams = useParams();
   const [params] = useSearchParams();
+  const tokenFromPath = routeParams.token || "";
   const tokenFromParams = params.get("token") || "";
   const token = useMemo(() => {
+    if (tokenFromPath) return tokenFromPath;
     if (tokenFromParams) return tokenFromParams;
     if (typeof window === "undefined") return "";
     // Fallback iOS/shortcuts: parfois le token est perdu.
     return localStorage.getItem("publicCardToken") || "";
-  }, [tokenFromParams]);
+  }, [tokenFromParams, tokenFromPath]);
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (tokenFromParams) localStorage.setItem("publicCardToken", tokenFromParams);
-  }, [tokenFromParams]);
+    if (tokenFromPath) localStorage.setItem("publicCardToken", tokenFromPath);
+    else if (tokenFromParams) localStorage.setItem("publicCardToken", tokenFromParams);
+  }, [tokenFromParams, tokenFromPath]);
 
   useEffect(() => {
     // Important for iOS/Android home-screen shortcuts:
@@ -56,8 +60,8 @@ export function PublicCardPage() {
   const cardUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     const url = new URL(window.location.href);
-    url.pathname = "/card";
-    url.searchParams.set("token", token);
+    url.pathname = `/card/${encodeURIComponent(token)}`;
+    url.search = "";
     return url.toString();
   }, [token]);
 

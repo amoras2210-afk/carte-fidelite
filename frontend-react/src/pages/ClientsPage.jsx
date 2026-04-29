@@ -233,7 +233,7 @@ export function ClientsPage({ auth }) {
   const buildPublicCardUrl = (cardToken) => {
     if (!cardToken) return "";
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}/card?token=${encodeURIComponent(cardToken)}`;
+    return `${window.location.origin}/card/${encodeURIComponent(cardToken)}`;
   };
 
   const loadPublicCardLink = async (client) => {

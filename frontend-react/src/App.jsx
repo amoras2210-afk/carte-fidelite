@@ -51,6 +51,7 @@ function App() {
       <Routes>
         {/* Public PWA card (no merchant auth) */}
         <Route path="/card" element={<PublicCardPage />} />
+        <Route path="/card/:token" element={<PublicCardPage />} />
         <Route path="/*" element={<MerchantApp auth={auth} />} />
       </Routes>
     </ToastProvider>
