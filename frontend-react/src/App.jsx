@@ -5,7 +5,6 @@ import { AuthPage } from "./pages/AuthPage";
 import { PublicCardPage } from "./pages/PublicCardPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
-import { BusinessPage } from "./pages/BusinessPage";
 import { ClientsPage } from "./pages/ClientsPage";
 import { CampaignsPage } from "./pages/CampaignsPage";
 import { WalletPage } from "./pages/WalletPage";
@@ -20,7 +19,6 @@ function MerchantApp({ auth }) {
       <Routes>
         <Route path="/" element={<OverviewPage auth={auth} />} />
         <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
-        <Route path="/business" element={<BusinessPage auth={auth} />} />
         <Route path="/clients" element={<ClientsPage auth={auth} />} />
         <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
         <Route path="/wallet" element={<WalletPage auth={auth} />} />

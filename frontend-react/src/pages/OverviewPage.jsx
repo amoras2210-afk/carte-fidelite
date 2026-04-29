@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiRequest } from "../lib/api";
 
 export function OverviewPage({ auth }) {
@@ -28,23 +29,40 @@ export function OverviewPage({ auth }) {
   }, [auth.token]);
 
   return (
-    <section className="grid">
-      <article className="card stat">
-        <h3>Clients</h3>
-        <strong>{stats.clients}</strong>
-      </article>
-      <article className="card stat">
-        <h3>Points actifs</h3>
-        <strong>{stats.points}</strong>
-      </article>
-      <article className="card stat">
-        <h3>Visites scannees</h3>
-        <strong>{stats.visits}</strong>
-      </article>
-      <article className="card stat">
-        <h3>Recompenses gagnees</h3>
-        <strong>{stats.rewards}</strong>
-      </article>
-    </section>
+    <div className="stack dashboard-overview">
+      <div className="quick-links card subtle">
+        <span className="quick-links-label">Accès rapides</span>
+        <div className="quick-links-row">
+          <Link className="quick-link" to="/clients">
+            Gérer les clients
+          </Link>
+          <Link className="quick-link" to="/wallet">
+            Cartes Apple / Google
+          </Link>
+          <Link className="quick-link" to="/campaigns">
+            Nouvelle campagne
+          </Link>
+        </div>
+      </div>
+
+      <section className="dashboard-stats">
+        <article className="stat-card">
+          <span className="stat-card-label">Clients</span>
+          <strong className="stat-card-value">{stats.clients}</strong>
+        </article>
+        <article className="stat-card">
+          <span className="stat-card-label">Points actifs</span>
+          <strong className="stat-card-value">{stats.points}</strong>
+        </article>
+        <article className="stat-card">
+          <span className="stat-card-label">Visites (QR)</span>
+          <strong className="stat-card-value">{stats.visits}</strong>
+        </article>
+        <article className="stat-card">
+          <span className="stat-card-label">Récompenses débloquées</span>
+          <strong className="stat-card-value">{stats.rewards}</strong>
+        </article>
+      </section>
+    </div>
   );
 }

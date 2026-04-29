@@ -40,7 +40,7 @@ export function CampaignsPage({ auth }) {
     try {
       await apiRequest("/campaigns", { token: auth.token, method: "POST", body: form });
       setForm({ title: "", message: "", channel: "email" });
-      showToast("Campagne creee", "success");
+      showToast("Campagne enregistrée", "success");
       await load();
     } catch (error) {
       showToast(error.message, "error");
@@ -75,9 +75,9 @@ export function CampaignsPage({ auth }) {
       <article className="card">
         <h2>Emails promotionnels</h2>
         <p className="muted">
-          Tu rediges une annonce (evenement, reduction, nouveaute). Tu cliques sur <strong>Envoyer</strong> quand tu es pret :
-          Loyalty Pro envoie un email depuis ton Gmail connecte (Parametres) a tous les clients qui ont donne leur{" "}
-          <strong>consentement marketing</strong> et une adresse email.
+          Tu rédiges une annonce (événement, réduction, nouveauté). Clique sur <strong>Envoyer maintenant</strong> quand
+          tu es prêt : les mails partent depuis ton Gmail connecté (Paramètres) vers les clients ayant accepté le{" "}
+          <strong>marketing</strong> et une adresse email.
         </p>
         <p className="muted">
           Destinataires eligibles :{" "}

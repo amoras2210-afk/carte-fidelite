@@ -55,7 +55,7 @@ export function SettingsPage({ auth }) {
           cardDesign: settings.cardDesign
         }
       });
-      showToast("Settings sauvegardes", "success");
+      showToast("Paramètres enregistrés", "success");
     } catch (error) {
       showToast(error.message, "error");
     }
@@ -88,7 +88,7 @@ export function SettingsPage({ auth }) {
 
   return (
     <article className="card">
-      <h2>Parametres commerce</h2>
+      <h2>Commerce & carte</h2>
       {isLoading ? <div className="skeleton">Chargement...</div> : null}
       <form className="form" onSubmit={save}>
         <input

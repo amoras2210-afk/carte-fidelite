@@ -13,34 +13,34 @@ export function AnalyticsPage({ auth }) {
   }, [auth.token, showToast]);
 
   if (!analytics) {
-    return <div className="card skeleton">Chargement analytics...</div>;
+    return <div className="card skeleton subtle">Chargement des statistiques…</div>;
   }
 
   return (
-    <section className="grid">
-      <article className="card stat">
-        <h3>Clients actifs (7j)</h3>
-        <strong>{analytics.activeClients7d}</strong>
+    <section className="dashboard-stats analytics-stats">
+      <article className="stat-card">
+        <span className="stat-card-label">Clients actifs (7 j)</span>
+        <strong className="stat-card-value">{analytics.activeClients7d}</strong>
       </article>
-      <article className="card stat">
-        <h3>Clients actifs (30j)</h3>
-        <strong>{analytics.activeClients30d}</strong>
+      <article className="stat-card">
+        <span className="stat-card-label">Clients actifs (30 j)</span>
+        <strong className="stat-card-value">{analytics.activeClients30d}</strong>
       </article>
-      <article className="card stat">
-        <h3>Retention 7j</h3>
-        <strong>{analytics.retentionRate7d}%</strong>
+      <article className="stat-card">
+        <span className="stat-card-label">Rétention 7 j</span>
+        <strong className="stat-card-value">{analytics.retentionRate7d}%</strong>
       </article>
-      <article className="card stat">
-        <h3>Retention 30j</h3>
-        <strong>{analytics.retentionRate30d}%</strong>
+      <article className="stat-card">
+        <span className="stat-card-label">Rétention 30 j</span>
+        <strong className="stat-card-value">{analytics.retentionRate30d}%</strong>
       </article>
-      <article className="card stat">
-        <h3>Total clients</h3>
-        <strong>{analytics.totalClients}</strong>
+      <article className="stat-card">
+        <span className="stat-card-label">Total clients</span>
+        <strong className="stat-card-value">{analytics.totalClients}</strong>
       </article>
-      <article className="card stat">
-        <h3>Total points</h3>
-        <strong>{analytics.totalPoints}</strong>
+      <article className="stat-card">
+        <span className="stat-card-label">Total points</span>
+        <strong className="stat-card-value">{analytics.totalPoints}</strong>
       </article>
     </section>
   );

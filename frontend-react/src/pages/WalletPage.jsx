@@ -48,10 +48,10 @@ export function WalletPage({ auth }) {
   return (
     <section className="stack">
       <article className="card">
-        <h2>Wallet commerçant</h2>
+        <h2>État Wallet</h2>
         <p className="muted">
-          Cette page centralise le vrai parcours Wallet. Le générateur visuel sert au design et au QR, mais l'ajout au
-          Wallet se fait ici car il faut un pass signé côté serveur.
+          Les passes sont signés côté serveur. Configure les certificats pour Apple ; Google Wallet peut fonctionner en
+          mode gabarit tant que la prod n’est pas branchée.
         </p>
         {diagnostics ? (
           <div className="wallet-grid">
@@ -117,7 +117,7 @@ export function WalletPage({ auth }) {
       </article>
 
       <article className="card">
-        <h2>Parcours recommande</h2>
+        <h2>Guide rapide</h2>
         <div className="stack">
           <div className="soft-note">
             <strong>1. Creer ou ouvrir un client.</strong> Depuis la page <Link to="/clients">Clients</Link>, chaque
@@ -132,19 +132,20 @@ export function WalletPage({ auth }) {
             etre lu par la caisse ou par l'interface commerçant.
           </div>
         </div>
-        <div className="row wrap">
-          <Link to="/clients">Ouvrir les fiches clients</Link>
-          <span className="muted">C'est depuis cette page que tu ajoutes ensuite la carte a Apple Wallet.</span>
+        <div className="row wrap align-start">
+          <Link className="link-btn" to="/clients">
+            Ouvrir les fiches clients
+          </Link>
+          <span className="muted">Ajoute la carte Apple Wallet depuis une fiche client.</span>
         </div>
       </article>
 
-      <article className="card">
-        <h2>Diagnostic Google Wallet</h2>
+      <details className="card advanced-details">
+        <summary>Outils avancés — diagnostic Google Wallet</summary>
         <p className="muted">
-          Ce test renvoie le payload brut pour un client. Utile pour valider la structure avant une vraie integration
-          Google Wallet.
+          Payload JSON brut pour un client (intégration technique).
         </p>
-        <div className="row">
+        <div className="row wrap">
           <input
             value={googleClientId}
             onChange={(event) => setGoogleClientId(event.target.value)}
@@ -154,22 +155,8 @@ export function WalletPage({ auth }) {
             {isLoadingGoogle ? "Chargement..." : "Charger"}
           </button>
         </div>
-        {googlePayload ? <pre>{googlePayload}</pre> : <p className="muted">Aucun payload charge pour le moment.</p>}
-      </article>
-
-      <article className="card">
-        <h2>Suites prevues</h2>
-        <div className="stack">
-          <p className="muted">
-            <strong>Scan caisse :</strong> la base existe deja via l'API d'ajout de points. La prochaine etape est un
-            vrai flux de scan QR cote commerçant.
-          </p>
-          <p className="muted">
-            <strong>Notifications :</strong> on recommande de commencer par les campagnes email avant un vrai push web,
-            plus lourd a mettre en place.
-          </p>
-        </div>
-      </article>
+        {googlePayload ? <pre>{googlePayload}</pre> : <p className="muted">Aucun payload chargé.</p>}
+      </details>
     </section>
   );
 }
