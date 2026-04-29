@@ -154,7 +154,6 @@ async function addPoints(req, res, next) {
             clientId: client.id,
             merchantName: merchantResult.rows[0]?.business_name || "Votre commerce",
             clientEmail: client.email,
-            clientPhone: client.phone,
             clientName: client.full_name,
             reviewUrl: merchantResult.rows[0]?.review_url || ""
           })

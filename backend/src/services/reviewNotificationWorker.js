@@ -1,6 +1,6 @@
 const db = require("../config/db");
 const env = require("../config/env");
-const { sendReviewRequestEmail, sendReviewRequestSms } = require("./notificationService");
+const { sendReviewRequestEmail } = require("./notificationService");
 
 const REVIEW_NOTIFICATION_TYPE = "first_visit_review";
 
@@ -9,9 +9,9 @@ function buildFallbackReviewUrl(merchantName) {
   return `https://www.google.com/search?q=${encodeURIComponent(`${merchantName} avis`)}`;
 }
 
-async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merchantName, clientEmail, clientPhone, clientName, reviewUrl }) {
-  if (!clientEmail && !clientPhone) {
-    return { scheduled: false, reason: "missing_contact" };
+async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merchantName, clientEmail, clientName, reviewUrl }) {
+  if (!clientEmail) {
+    return { scheduled: false, reason: "missing_email" };
   }
 
   const existing = await db.query(
@@ -40,7 +40,6 @@ async function scheduleFirstVisitReviewNotification({ merchantId, clientId, merc
       JSON.stringify({
         merchantName,
         clientEmail,
-        clientPhone,
         clientName,
         reviewUrl: safeUrl
       })
@@ -65,24 +64,12 @@ async function processDueReviewNotifications(limit = 20) {
   for (const row of due.rows) {
     const payload = row.payload || {};
     try {
-      const merchantName = payload.merchantName || "Votre commerce";
-      const clientName = payload.clientName || "client";
-      let result = payload.clientPhone
-        ? await sendReviewRequestSms({
-            merchantName,
-            clientPhone: payload.clientPhone,
-            clientName,
-            reviewUrl: payload.reviewUrl
-          })
-        : { delivered: false, reason: "missing_phone" };
-      if (!result.delivered && payload.clientEmail) {
-        result = await sendReviewRequestEmail({
-          merchantName,
-          clientEmail: payload.clientEmail,
-          clientName,
-          reviewUrl: payload.reviewUrl
-        });
-      }
+      const result = await sendReviewRequestEmail({
+        merchantName: payload.merchantName || "Votre commerce",
+        clientEmail: payload.clientEmail,
+        clientName: payload.clientName || "client",
+        reviewUrl: payload.reviewUrl
+      });
 
       if (result.delivered) {
         await db.query(
