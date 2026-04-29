@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const twilio = require("twilio");
 const env = require("../config/env");
 
 const transporter =
@@ -10,6 +11,8 @@ const transporter =
         auth: { user: env.smtpUser, pass: env.smtpPass }
       })
     : null;
+const twilioClient =
+  env.twilioAccountSid && env.twilioAuthToken ? twilio(env.twilioAccountSid, env.twilioAuthToken) : null;
 
 async function sendRewardUnlockedEmail({ merchantName, clientEmail, clientName, points, rewardsEarned }) {
   if (!transporter || !clientEmail) {
@@ -61,8 +64,28 @@ async function sendReviewRequestEmail({ merchantName, clientEmail, clientName, r
   return { delivered: true };
 }
 
+async function sendReviewRequestSms({ merchantName, clientPhone, clientName, reviewUrl }) {
+  if (!twilioClient || !env.twilioFromNumber || !clientPhone) {
+    return { delivered: false, reason: "twilio_not_configured_or_missing_phone" };
+  }
+
+  const safeReviewUrl = reviewUrl || "https://www.google.com/maps";
+  const body =
+    `Bonjour ${clientName}, merci pour votre visite chez ${merchantName}. ` +
+    `Pouvez-vous nous laisser un avis ? ${safeReviewUrl}`;
+
+  await twilioClient.messages.create({
+    from: env.twilioFromNumber,
+    to: clientPhone,
+    body
+  });
+
+  return { delivered: true };
+}
+
 module.exports = {
   sendRewardUnlockedEmail,
   sendCampaignEmail,
-  sendReviewRequestEmail
+  sendReviewRequestEmail,
+  sendReviewRequestSms
 };
