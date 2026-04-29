@@ -244,8 +244,12 @@ export function ClientsPage({ auth }) {
       });
       const url = buildPublicCardUrl(response.data.token);
       setPublicCardLink(url);
-      await navigator.clipboard.writeText(url);
-      showToast("Lien carte copié (gratuit)", "success");
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast("Lien carte copié (gratuit)", "success");
+      } catch {
+        showToast("Lien créé. Copie bloquée par le navigateur : copie manuelle juste en dessous.", "info");
+      }
     } catch (error) {
       showToast(error.message, "error");
     }
