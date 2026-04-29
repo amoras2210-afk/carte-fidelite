@@ -49,6 +49,37 @@ function encodeGmailRawMessage(rawString) {
     .replace(/=+$/, "");
 }
 
+async function sendPlainTextViaGmailApi({
+  oauth2Client,
+  fromEmail,
+  merchantDisplayName,
+  toEmail,
+  subjectLine,
+  bodyPlain
+}) {
+  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
+  const safeDisplay = merchantNameOrFallback(merchantDisplayName, fromEmail);
+  const fromHeader = /^[\x00-\x7F]+$/.test(safeDisplay)
+    ? `${safeDisplay} <${fromEmail}>`
+    : `${mimeEncodedWordUtf8(safeDisplay)} <${fromEmail}>`;
+
+  const headerBlock = [
+    `From: ${fromHeader}`,
+    `To: ${toEmail}`,
+    `Subject: ${mimeEncodedWordUtf8(subjectLine)}`,
+    "MIME-Version: 1.0",
+    "Content-Type: text/plain; charset=UTF-8"
+  ].join("\r\n");
+  const raw = `${headerBlock}\r\n\r\n${bodyPlain}\r\n`;
+
+  await gmail.users.messages.send({
+    userId: "me",
+    requestBody: {
+      raw: encodeGmailRawMessage(raw)
+    }
+  });
+}
+
 async function sendReviewViaGmailApi({
   oauth2Client,
   fromEmail,
@@ -57,7 +88,6 @@ async function sendReviewViaGmailApi({
   clientName,
   reviewUrl
 }) {
-  const gmail = google.gmail({ version: "v1", auth: oauth2Client });
   const safeReviewUrl = reviewUrl || "https://www.google.com/maps";
   const body =
     `Bonjour ${clientName},\n\n` +
@@ -66,25 +96,13 @@ async function sendReviewViaGmailApi({
     "Merci !";
 
   const subject = `${merchantDisplayName} - Votre avis compte`;
-  const safeDisplay = merchantNameOrFallback(merchantDisplayName, fromEmail);
-  const fromHeader = /^[\x00-\x7F]+$/.test(safeDisplay)
-    ? `${safeDisplay} <${fromEmail}>`
-    : `${mimeEncodedWordUtf8(safeDisplay)} <${fromEmail}>`;
-
-  const headerBlock = [
-    `From: ${fromHeader}`,
-    `To: ${clientEmail}`,
-    `Subject: ${mimeEncodedWordUtf8(subject)}`,
-    "MIME-Version: 1.0",
-    "Content-Type: text/plain; charset=UTF-8"
-  ].join("\r\n");
-  const raw = `${headerBlock}\r\n\r\n${body}\r\n`;
-
-  await gmail.users.messages.send({
-    userId: "me",
-    requestBody: {
-      raw: encodeGmailRawMessage(raw)
-    }
+  await sendPlainTextViaGmailApi({
+    oauth2Client,
+    fromEmail,
+    merchantDisplayName,
+    toEmail: clientEmail,
+    subjectLine: subject,
+    bodyPlain: body
   });
 }
 
@@ -108,8 +126,30 @@ async function sendRewardUnlockedEmail({ merchantName, clientEmail, clientName, 
   return { delivered: true };
 }
 
-async function sendCampaignEmail({ merchantName, clientEmail, clientName, title, message }) {
-  if (!transporter || !clientEmail) {
+async function sendCampaignEmail({ merchantId, merchantName, clientEmail, clientName, title, message }) {
+  if (!clientEmail) {
+    return { delivered: false, reason: "missing_email" };
+  }
+
+  const googleAuth = merchantId ? await loadMerchantGoogleMailAuth(merchantId) : null;
+  if (googleAuth) {
+    try {
+      await sendPlainTextViaGmailApi({
+        oauth2Client: googleAuth.oauth2Client,
+        fromEmail: googleAuth.gmailAddress,
+        merchantDisplayName: merchantName,
+        toEmail: clientEmail,
+        subjectLine: `${merchantName} - ${title}`,
+        bodyPlain: `Bonjour ${clientName},\n\n${message}`
+      });
+      return { delivered: true };
+    } catch (error) {
+      console.error("[notification] Gmail API campaign email failed:", error.message || error);
+      return { delivered: false, reason: `gmail_api:${String(error.message || error).slice(0, 500)}` };
+    }
+  }
+
+  if (!transporter) {
     return { delivered: false, reason: "smtp_not_configured_or_missing_email" };
   }
 

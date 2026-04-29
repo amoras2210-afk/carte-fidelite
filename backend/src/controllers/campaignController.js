@@ -7,10 +7,30 @@ const { parsePagination } = require("../utils/pagination");
 const ApiError = require("../utils/ApiError");
 
 const campaignSchema = z.object({
-  title: z.string().min(3).max(100),
-  message: z.string().min(5).max(500),
+  title: z.string().min(3).max(120),
+  message: z.string().min(5).max(4000),
   channel: z.enum(["email", "sms"]).default("email")
 });
+
+async function getEmailRecipientCount(req, res, next) {
+  try {
+    const merchantId = req.auth.merchantId;
+    const result = await db.query(
+      `SELECT COUNT(*)::int AS total
+       FROM clients
+       WHERE merchant_id = $1
+         AND consent_marketing = TRUE
+         AND email IS NOT NULL
+         AND TRIM(email) <> ''`,
+      [merchantId]
+    );
+    return sendSuccess(res, {
+      data: { count: result.rows[0]?.total ?? 0 }
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function listCampaigns(req, res, next) {
   try {
@@ -76,11 +96,16 @@ async function sendCampaign(req, res, next) {
       throw new ApiError(404, "Campaign not found", null, "CAMPAIGN_NOT_FOUND");
     }
 
+    if (campaign.channel === "sms") {
+      throw new ApiError(501, "Envoi SMS non disponible pour le moment", null, "SMS_NOT_IMPLEMENTED");
+    }
+
     const merchantName = merchantResult.rows[0]?.business_name || "Votre commerce";
     let delivered = 0;
 
     for (const client of clientsResult.rows) {
       const result = await sendCampaignEmail({
+        merchantId,
         merchantName,
         clientEmail: client.email,
         clientName: client.full_name,
@@ -113,5 +138,6 @@ async function sendCampaign(req, res, next) {
 module.exports = {
   listCampaigns,
   createCampaign,
-  sendCampaign
+  sendCampaign,
+  getEmailRecipientCount
 };

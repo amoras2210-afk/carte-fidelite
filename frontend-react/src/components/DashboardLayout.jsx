@@ -5,7 +5,7 @@ const links = [
   { to: "/analytics", label: "Analytics" },
   { to: "/business", label: "Business" },
   { to: "/clients", label: "Clients" },
-  { to: "/campaigns", label: "Campaigns" },
+  { to: "/campaigns", label: "Campagnes" },
   { to: "/wallet", label: "Wallet" },
   { to: "/settings", label: "Settings" }
 ];
