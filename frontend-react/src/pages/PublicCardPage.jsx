@@ -30,6 +30,29 @@ export function PublicCardPage() {
     if (tokenFromParams) localStorage.setItem("publicCardToken", tokenFromParams);
   }, [tokenFromParams]);
 
+  useEffect(() => {
+    // Important for iOS/Android home-screen shortcuts:
+    // for client card pages we prefer preserving the exact URL (?token=...),
+    // instead of the global app manifest start_url.
+    const manifestLink = document.querySelector('link[rel="manifest"]');
+    if (!manifestLink) return undefined;
+    const previousHref = manifestLink.getAttribute("href");
+    manifestLink.removeAttribute("href");
+    return () => {
+      if (previousHref) manifestLink.setAttribute("href", previousHref);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const previousTitle = document.title;
+    const merchantName = data?.merchant?.businessName;
+    document.title = merchantName ? `${merchantName} - Carte fidelite` : "Carte fidelite";
+    return () => {
+      document.title = previousTitle;
+    };
+  }, [data?.merchant?.businessName]);
+
   const cardUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
     const url = new URL(window.location.href);
