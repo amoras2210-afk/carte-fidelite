@@ -22,7 +22,7 @@ const env = {
   googleMailClientId: process.env.GOOGLE_MAIL_CLIENT_ID || "",
   googleMailClientSecret: process.env.GOOGLE_MAIL_CLIENT_SECRET || "",
   googleMailRedirectUri: process.env.GOOGLE_MAIL_REDIRECT_URI || "",
-  reviewRequestDelayMinutes: Number(process.env.REVIEW_REQUEST_DELAY_MINUTES || 10),
+  reviewRequestDelayMinutes: Number(process.env.REVIEW_REQUEST_DELAY_MINUTES || 1),
   reviewDefaultUrl: process.env.REVIEW_DEFAULT_URL || "",
   appleWalletPassphrase: process.env.APPLE_WALLET_PASSPHRASE || "",
   appleWalletWWDRPath: process.env.APPLE_WALLET_WWDR_PATH || "",
