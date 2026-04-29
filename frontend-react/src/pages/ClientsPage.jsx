@@ -588,6 +588,84 @@ export function ClientsPage({ auth }) {
               </button>
             </div>
 
+            <article className="card inner">
+              <h3>Generateur FidelioGen : quoi copier ?</h3>
+              <p className="muted">
+                Si tu veux creer une carte visuelle dans le generateur, utilise les valeurs ci-dessous. Tu peux soit
+                coller les IDs separes, soit copier directement le texte QR complet.
+              </p>
+              <div className="table compact">
+                <div className="row item">
+                  <strong>Etape 1</strong>
+                  <span>Ouvre le generateur FidelioGen (le fichier visuel separe).</span>
+                </div>
+                <div className="row item">
+                  <strong>Etape 2</strong>
+                  <span>
+                    Dans le generateur, colle <strong>l'ID commercant</strong> puis <strong>l'ID client</strong>.
+                  </span>
+                </div>
+                <div className="row item">
+                  <strong>Etape 3</strong>
+                  <span>
+                    Si le generateur demande directement une valeur QR, ne colle pas les 2 IDs separes : colle le{" "}
+                    <strong>texte QR complet</strong>.
+                  </span>
+                </div>
+              </div>
+              <div className="stack">
+                <div className="row wrap align-start">
+                  <label className="grow">
+                    1. ID commercant
+                    <input readOnly value={merchantId || ""} className="mono" />
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary self-end"
+                    onClick={() => copyText(merchantId, "ID commercant copie")}
+                    disabled={!merchantId}
+                  >
+                    Copier ID commercant
+                  </button>
+                </div>
+                <div className="row wrap align-start">
+                  <label className="grow">
+                    2. ID client
+                    <input readOnly value={selectedClient.id} className="mono" />
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary self-end"
+                    onClick={() => copyText(selectedClient.id, "ID client copie")}
+                  >
+                    Copier ID client
+                  </button>
+                </div>
+                <div className="row wrap align-start">
+                  <label className="grow">
+                    3. Texte QR complet a coller dans le generateur
+                    <input readOnly value={qrPayloadForClient(selectedClient)} className="mono" />
+                  </label>
+                  <button
+                    type="button"
+                    className="secondary self-end"
+                    onClick={() => copyText(qrPayloadForClient(selectedClient), "Texte QR complet copie")}
+                  >
+                    Copier texte QR
+                  </button>
+                </div>
+              </div>
+              <p className="muted">
+                En pratique : dans le generateur, colle <strong>l'ID commercant</strong> dans le champ commerce,{" "}
+                <strong>l'ID client</strong> dans le champ client. Si le generateur te demande directement une valeur QR,
+                colle plutot le <strong>texte QR complet</strong>.
+              </p>
+              <p className="muted">
+                Rappel : le generateur sert a creer le visuel de la carte. Le scan dans Loyalty Pro utilise ensuite ces
+                memes informations pour reconnaitre le bon commerce et le bon client.
+              </p>
+            </article>
+
             {publicCardLink ? <p className="muted mono">{publicCardLink}</p> : null}
 
             {isHistoryLoading ? <div className="skeleton">Chargement historique...</div> : null}
@@ -704,7 +782,8 @@ export function ClientsPage({ auth }) {
           <article className="card inner">
             <h3>FidélioGen / QR technique</h3>
             <p className="muted">
-              Pour le générateur, colle l'ID commerce et l'ID client pour produire un QR compatible caisse.
+              Le generateur sert seulement a creer le visuel de la carte. Pour un client precis, ouvre sa fiche plus haut :
+              tu verras directement quoi copier pour l'ID commercant, l'ID client et le texte QR complet.
             </p>
             {merchantId ? (
               <div className="row wrap align-start">
