@@ -12,6 +12,17 @@ const updateSettingsSchema = z.object({
   rewardThreshold: z.number().int().min(1).max(1000),
   rewardLabel: z.string().min(2).max(80),
   planMrrEur: z.number().min(0).max(99999).optional(),
+  automations: z.object({
+    inactiveEnabled: z.boolean().default(false),
+    inactiveDays: z.number().int().min(1).max(365).default(30),
+    birthdayEnabled: z.boolean().default(false),
+    rewardEnabled: z.boolean().default(false)
+  }).default({
+    inactiveEnabled: false,
+    inactiveDays: 30,
+    birthdayEnabled: false,
+    rewardEnabled: false
+  }),
   cardDesign: z.object({
     tagline: z.string().max(120).default(DEFAULT_CARD_DESIGN.tagline),
     theme: z.enum(["gold", "night", "forest", "rose", "slate", "ocean", "custom"]).default(DEFAULT_CARD_DESIGN.theme),
@@ -33,6 +44,8 @@ async function getSettings(req, res, next) {
     const result = await db.query(
       `SELECT m.id, m.business_name, m.email, m.brand_color, m.plan_mrr_eur, m.review_url,
               m.google_mail_address, m.google_mail_connected_at,
+              m.auto_email_inactive_enabled, m.auto_email_inactive_days,
+              m.auto_email_birthday_enabled, m.auto_email_reward_enabled,
               m.card_tagline, m.card_theme, m.card_style, m.card_bg_color, m.card_bg2_color,
               m.card_accent_color, m.card_accent2_color, m.card_text_color, m.card_text_muted_color,
               m.card_stamp_color, m.card_logo_url,
@@ -59,6 +72,12 @@ async function getSettings(req, res, next) {
         rewardThreshold: row.reward_threshold,
         rewardLabel: row.reward_label,
         planMrrEur: Number(row.plan_mrr_eur ?? 49),
+        automations: {
+          inactiveEnabled: Boolean(row.auto_email_inactive_enabled),
+          inactiveDays: Number(row.auto_email_inactive_days || 30),
+          birthdayEnabled: Boolean(row.auto_email_birthday_enabled),
+          rewardEnabled: Boolean(row.auto_email_reward_enabled)
+        },
         cardDesign: toCardDesign(row)
       }
     });
@@ -110,6 +129,21 @@ async function updateSettings(req, res, next) {
     if (payload.planMrrEur !== undefined) {
       await db.query("UPDATE merchants SET plan_mrr_eur = $1 WHERE id = $2", [payload.planMrrEur, merchantId]);
     }
+    await db.query(
+      `UPDATE merchants
+       SET auto_email_inactive_enabled = $1,
+           auto_email_inactive_days = $2,
+           auto_email_birthday_enabled = $3,
+           auto_email_reward_enabled = $4
+       WHERE id = $5`,
+      [
+        payload.automations.inactiveEnabled,
+        payload.automations.inactiveDays,
+        payload.automations.birthdayEnabled,
+        payload.automations.rewardEnabled,
+        merchantId
+      ]
+    );
     await db.query("UPDATE loyalty_settings SET reward_threshold = $1, reward_label = $2 WHERE merchant_id = $3", [
       payload.rewardThreshold,
       payload.rewardLabel,
@@ -131,6 +165,7 @@ async function updateSettings(req, res, next) {
         rewardThreshold: payload.rewardThreshold,
         rewardLabel: payload.rewardLabel,
         planMrrEur: payload.planMrrEur,
+        automations: payload.automations,
         cardDesign: payload.cardDesign
       }
     });

@@ -83,3 +83,22 @@ CREATE INDEX IF NOT EXISTS idx_onboarding_events_session ON onboarding_events(se
 CREATE INDEX IF NOT EXISTS idx_onboarding_sessions_merchant ON onboarding_sessions(merchant_id);
 
 ALTER TABLE merchants ADD COLUMN IF NOT EXISTS plan_mrr_eur NUMERIC(10, 2) NOT NULL DEFAULT 49;
+ALTER TABLE merchants ADD COLUMN IF NOT EXISTS auto_email_inactive_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE merchants ADD COLUMN IF NOT EXISTS auto_email_inactive_days INT NOT NULL DEFAULT 30;
+ALTER TABLE merchants ADD COLUMN IF NOT EXISTS auto_email_birthday_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE merchants ADD COLUMN IF NOT EXISTS auto_email_reward_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS automation_email_logs (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  merchant_id UUID NOT NULL REFERENCES merchants(id) ON DELETE CASCADE,
+  client_id UUID NOT NULL REFERENCES clients(id) ON DELETE CASCADE,
+  automation_type TEXT NOT NULL,
+  status TEXT NOT NULL,
+  reason TEXT,
+  subject TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  sent_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_automation_email_logs_client_sent
+  ON automation_email_logs(merchant_id, client_id, sent_at DESC);

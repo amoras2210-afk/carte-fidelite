@@ -12,6 +12,12 @@ const initialState = {
   rewardThreshold: 10,
   rewardLabel: "1 reward",
   planMrrEur: 49,
+  automations: {
+    inactiveEnabled: false,
+    inactiveDays: 30,
+    birthdayEnabled: false,
+    rewardEnabled: false
+  },
   cardDesign: DEFAULT_CARD_DESIGN
 };
 
@@ -32,6 +38,12 @@ export function SettingsPage({ auth }) {
           rewardThreshold: response.data.rewardThreshold,
           rewardLabel: response.data.rewardLabel,
           planMrrEur: response.data.planMrrEur ?? 49,
+          automations: {
+            inactiveEnabled: Boolean(response.data.automations?.inactiveEnabled),
+            inactiveDays: Number(response.data.automations?.inactiveDays || 30),
+            birthdayEnabled: Boolean(response.data.automations?.birthdayEnabled),
+            rewardEnabled: Boolean(response.data.automations?.rewardEnabled)
+          },
           cardDesign: resolveCardDesign(response.data.cardDesign)
         })
       )
@@ -52,6 +64,12 @@ export function SettingsPage({ auth }) {
           rewardThreshold: Number(settings.rewardThreshold),
           rewardLabel: settings.rewardLabel,
           planMrrEur: Number(settings.planMrrEur),
+          automations: {
+            inactiveEnabled: Boolean(settings.automations.inactiveEnabled),
+            inactiveDays: Number(settings.automations.inactiveDays || 30),
+            birthdayEnabled: Boolean(settings.automations.birthdayEnabled),
+            rewardEnabled: Boolean(settings.automations.rewardEnabled)
+          },
           cardDesign: settings.cardDesign
         }
       });
@@ -154,6 +172,74 @@ export function SettingsPage({ auth }) {
             onChange={(event) => setSettings((prev) => ({ ...prev, planMrrEur: event.target.value }))}
           />
         </label>
+        <div className="card inner">
+          <div className="row spread wrap">
+            <div>
+              <h3>Automatisations email</h3>
+              <p className="muted">
+                Envoi automatique via Gmail connecte (ou SMTP), avec anti-spam global: 1 email auto maximum par client
+                tous les 7 jours.
+              </p>
+            </div>
+            <span className="badge info-badge">Email uniquement</span>
+          </div>
+          <div className="form">
+            <label className="consent">
+              <input
+                type="checkbox"
+                checked={settings.automations.inactiveEnabled}
+                onChange={(event) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    automations: { ...prev.automations, inactiveEnabled: event.target.checked }
+                  }))
+                }
+              />
+              Relance clients inactifs
+            </label>
+            <label>
+              Inactivite (jours)
+              <input
+                type="number"
+                min="1"
+                max="365"
+                value={settings.automations.inactiveDays}
+                onChange={(event) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    automations: { ...prev.automations, inactiveDays: event.target.value }
+                  }))
+                }
+              />
+            </label>
+            <label className="consent">
+              <input
+                type="checkbox"
+                checked={settings.automations.birthdayEnabled}
+                onChange={(event) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    automations: { ...prev.automations, birthdayEnabled: event.target.checked }
+                  }))
+                }
+              />
+              Anniversaire de fidelite (date d'inscription client)
+            </label>
+            <label className="consent">
+              <input
+                type="checkbox"
+                checked={settings.automations.rewardEnabled}
+                onChange={(event) =>
+                  setSettings((prev) => ({
+                    ...prev,
+                    automations: { ...prev.automations, rewardEnabled: event.target.checked }
+                  }))
+                }
+              />
+              Recompense disponible (seuil atteint)
+            </label>
+          </div>
+        </div>
         <div className="card inner">
           <div className="row spread wrap">
             <div>

@@ -14,8 +14,10 @@ const errorHandler = require("./middleware/errorHandler");
 const requestLogger = require("./middleware/requestLogger");
 const { sendSuccess } = require("./utils/httpResponse");
 const { processDueReviewNotifications } = require("./services/reviewNotificationWorker");
+const { processAutomationEmails } = require("./services/automationEmailService");
 
 let lastHealthReviewProcessMs = 0;
+let lastHealthAutomationProcessMs = 0;
 
 const app = express();
 
@@ -31,6 +33,12 @@ app.get("/health", (req, res) => {
     lastHealthReviewProcessMs = now;
     processDueReviewNotifications(20).catch((err) =>
       console.error("[health] review notifications:", err.message || err)
+    );
+  }
+  if (now - lastHealthAutomationProcessMs > 55_000) {
+    lastHealthAutomationProcessMs = now;
+    processAutomationEmails(10).catch((err) =>
+      console.error("[health] automation emails:", err.message || err)
     );
   }
   return sendSuccess(res, {

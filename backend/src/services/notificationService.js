@@ -252,9 +252,53 @@ async function sendCardLinkToClientEmail({ merchantId, merchantName, clientEmail
   return { delivered: true };
 }
 
+async function sendAutomationLifecycleEmail({
+  merchantId,
+  merchantName,
+  clientEmail,
+  clientName,
+  subjectLine,
+  bodyPlain
+}) {
+  if (!clientEmail?.trim()) {
+    return { delivered: false, reason: "missing_email" };
+  }
+
+  const googleAuth = merchantId ? await loadMerchantGoogleMailAuth(merchantId) : null;
+  if (googleAuth) {
+    try {
+      await sendPlainTextViaGmailApi({
+        oauth2Client: googleAuth.oauth2Client,
+        fromEmail: googleAuth.gmailAddress,
+        merchantDisplayName: merchantName,
+        toEmail: clientEmail.trim(),
+        subjectLine,
+        bodyPlain
+      });
+      return { delivered: true };
+    } catch (error) {
+      console.error("[notification] Gmail API lifecycle email failed:", error.message || error);
+      return { delivered: false, reason: `gmail_api:${String(error.message || error).slice(0, 500)}` };
+    }
+  }
+
+  if (!transporter) {
+    return { delivered: false, reason: "mail_not_configured" };
+  }
+
+  await transporter.sendMail({
+    from: env.smtpFrom,
+    to: clientEmail.trim(),
+    subject: subjectLine,
+    text: bodyPlain
+  });
+  return { delivered: true };
+}
+
 module.exports = {
   sendRewardUnlockedEmail,
   sendCampaignEmail,
   sendReviewRequestEmail,
-  sendCardLinkToClientEmail
+  sendCardLinkToClientEmail,
+  sendAutomationLifecycleEmail
 };
