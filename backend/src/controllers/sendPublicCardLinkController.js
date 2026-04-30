@@ -7,12 +7,13 @@ const { verifyCardToken } = require("../utils/cardToken");
 const { sendCardLinkToClientEmail } = require("../services/notificationService");
 
 const bodySchema = z.object({
-  cardToken: z.string().min(20)
+  cardToken: z.string().min(20),
+  cardUrl: z.string().url().optional()
 });
 
 async function sendPublicCardLink(req, res, next) {
   try {
-    const { cardToken } = bodySchema.parse(req.body || {});
+    const { cardToken, cardUrl: cardUrlFromClient } = bodySchema.parse(req.body || {});
     const { merchantId, clientId } = verifyCardToken(cardToken);
 
     const clientResult = await db.query(
@@ -27,11 +28,19 @@ async function sendPublicCardLink(req, res, next) {
     const merchantResult = await db.query(`SELECT business_name FROM merchants WHERE id = $1`, [merchantId]);
     const merchantName = merchantResult.rows[0]?.business_name || "Commerce";
 
-    const base = String(env.publicFrontendUrl || "").trim().replace(/\/$/, "");
-    if (!base) {
-      throw new ApiError(500, "PUBLIC_FRONTEND_URL manquant dans la configuration serveur", null, "PUBLIC_FRONTEND_URL_MISSING");
+    let cardUrl = String(cardUrlFromClient || "").trim();
+    if (!cardUrl) {
+      const base = String(env.publicFrontendUrl || "").trim().replace(/\/$/, "");
+      if (!base) {
+        throw new ApiError(
+          500,
+          "PUBLIC_FRONTEND_URL manquant dans la configuration serveur",
+          null,
+          "PUBLIC_FRONTEND_URL_MISSING"
+        );
+      }
+      cardUrl = `${base}/card/${encodeURIComponent(cardToken)}`;
     }
-    const cardUrl = `${base}/card/${encodeURIComponent(cardToken)}`;
 
     const delivery = await sendCardLinkToClientEmail({
       merchantId,

@@ -692,22 +692,33 @@
     }
 
     let mailDelivery = null;
+    let mailDeliveryError = "";
     try {
       const apiBaseForMail = (params.get("apiBase") || "").trim();
       const cardTok = urlToken;
-      if (apiBaseForMail && cardTok) {
+      if (!apiBaseForMail) {
+        mailDeliveryError = "api_base_missing";
+      } else if (!cardTok) {
+        mailDeliveryError = "card_token_missing";
+      } else {
+        const cardUrlForMail = (params.get("cardUrl") || "").trim();
         const sendResp = await fetch(`${apiBaseForMail}/public/send-card-link`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ cardToken: cardTok })
+          body: JSON.stringify({
+            cardToken: cardTok,
+            cardUrl: cardUrlForMail || undefined
+          })
         });
         const json = await sendResp.json().catch(() => ({}));
         if (sendResp.ok && json?.data) {
           mailDelivery = json.data;
+        } else {
+          mailDeliveryError = json?.error?.message || `HTTP ${sendResp.status}`;
         }
       }
-    } catch {
-      /* envoi optionnel */
+    } catch (err) {
+      mailDeliveryError = err?.message || "network_error";
     }
 
     const baseToast = designSaved
@@ -723,6 +734,10 @@
       mailSuffix = " Configure Gmail ou SMTP dans Loyalty Pro pour l’envoi automatique.";
     } else if (mailDelivery?.reason && String(mailDelivery.reason).startsWith("gmail_api:")) {
       mailSuffix = " E-mail non envoyé (vérifie la connexion Gmail).";
+    } else if (mailDeliveryError) {
+      mailSuffix = ` E-mail auto non envoyé (${mailDeliveryError}).`;
+    } else {
+      mailSuffix = " E-mail auto non confirmé (vérifie les logs API).";
     }
 
     toast(baseToast + mailSuffix);
