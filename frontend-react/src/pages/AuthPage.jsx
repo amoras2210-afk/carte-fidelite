@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { apiRequest, linkOnboardingSession, trackOnboarding } from "../lib/api";
+import { useNavigate } from "react-router-dom";
+import { apiRequest, createBillingCheckoutSession, linkOnboardingSession, trackOnboarding } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 
 export function AuthPage({ auth }) {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [businessName, setBusinessName] = useState("");
@@ -25,7 +27,7 @@ export function AuthPage({ auth }) {
       await trackOnboarding({ step: 3, action: "complete" });
       await linkOnboardingSession(token);
       auth.setToken(token);
-      showToast("Connexion réussie", "success");
+      showToast("Connexion réussie — ouverture en cours.", "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
@@ -48,7 +50,20 @@ export function AuthPage({ auth }) {
       await trackOnboarding({ step: 3, action: "complete" });
       await linkOnboardingSession(token);
       auth.setToken(token);
-      showToast("Compte créé. Retourne sur l’accueil → Tarifs pour payer avec Stripe.", "success");
+      try {
+        const checkoutRes = await createBillingCheckoutSession(token);
+        const payUrl = checkoutRes.data?.url;
+        if (payUrl) {
+          window.location.href = payUrl;
+          return;
+        }
+      } catch (checkoutErr) {
+        showToast(checkoutErr.message, "error");
+        navigate("/abonnement", { replace: true });
+        return;
+      }
+      navigate("/abonnement", { replace: true });
+      showToast("Compte créé — finalisez le paiement pour accéder à l’application.", "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
@@ -63,7 +78,9 @@ export function AuthPage({ auth }) {
           <img className="auth-brand-logo-img" src="/logo-loyalty-pro.svg" alt="" width={48} height={48} decoding="async" />
           <div>
             <h1 className="auth-title">Loyalty Pro</h1>
-            <p className="auth-tagline">Programme de fidélité digital pour ton commerce.</p>
+            <p className="auth-tagline">
+              Créez un compte puis souscription Stripe : aucun accès aux modules avant paiement validé.
+            </p>
           </div>
         </div>
 
@@ -98,7 +115,7 @@ export function AuthPage({ auth }) {
             {isLoading ? "Connexion…" : "Se connecter"}
           </button>
           <button type="button" className="secondary" onClick={handleRegister} disabled={isLoading}>
-            Créer un compte
+            Créer un compte et payer
           </button>
         </form>
       </div>

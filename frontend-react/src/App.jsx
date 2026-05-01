@@ -12,6 +12,7 @@ import { ClientsPage } from "./pages/ClientsPage";
 import { CampaignsPage } from "./pages/CampaignsPage";
 import { WalletPage } from "./pages/WalletPage";
 import { GeneratorAccessPage } from "./pages/GeneratorAccessPage";
+import { SubscribeGatePage } from "./pages/SubscribeGatePage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ToastProvider } from "./components/ToastContext";
 import { useToast } from "./components/ToastContext";
@@ -30,6 +31,12 @@ function MerchantApp({ auth }) {
       setBilling(response.data);
     } catch (error) {
       showToast(error.message, "error");
+      setBilling({
+        stripeConfigured: false,
+        subscriptionStatus: "inactive",
+        currentPeriodEnd: null,
+        portalAvailable: false
+      });
     } finally {
       setBillingLoading(false);
     }
@@ -57,6 +64,8 @@ function MerchantApp({ auth }) {
   const subscriptionActive =
     billing?.subscriptionStatus === "active" || billing?.subscriptionStatus === "trialing";
 
+  const resolvingBilling = Boolean(auth.token) && (billingLoading || billing === null);
+
   const merchantBillingValue = useMemo(
     () => ({
       billing,
@@ -78,22 +87,48 @@ function MerchantApp({ auth }) {
     );
   }
 
+  if (resolvingBilling) {
+    return (
+      <MerchantBillingContext.Provider value={merchantBillingValue}>
+        <div className="auth-shell">
+          <div className="auth-panel card">
+            <p className="muted" style={{ margin: 0 }}>
+              Vérification de l&apos;abonnement…
+            </p>
+          </div>
+        </div>
+      </MerchantBillingContext.Provider>
+    );
+  }
+
   return (
     <MerchantBillingContext.Provider value={merchantBillingValue}>
       <Routes>
-        <Route path="/" element={<LandingPage {...landingProps} />} />
-        <Route path="/accueil" element={<LandingPage {...landingProps} />} />
-        <Route path="/connexion" element={<Navigate to="/tableau" replace />} />
-        <Route element={<DashboardLayout auth={auth} />}>
-          <Route path="/tableau" element={<OverviewPage auth={auth} />} />
-          <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
-          <Route path="/clients" element={<ClientsPage auth={auth} />} />
-          <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
-          <Route path="/wallet" element={<WalletPage auth={auth} />} />
-          <Route path="/generateur-carte" element={<GeneratorAccessPage />} />
-          <Route path="/settings" element={<SettingsPage auth={auth} />} />
-        </Route>
-        <Route path="*" element={<Navigate to="/tableau" replace />} />
+        <Route path="/connexion" element={<Navigate to={subscriptionActive ? "/tableau" : "/abonnement"} replace />} />
+        {!subscriptionActive ? (
+          <>
+            <Route path="/abonnement" element={<SubscribeGatePage auth={auth} />} />
+            <Route path="/" element={<LandingPage {...landingProps} />} />
+            <Route path="/accueil" element={<LandingPage {...landingProps} />} />
+            <Route path="*" element={<Navigate to="/abonnement" replace />} />
+          </>
+        ) : (
+          <>
+            <Route path="/" element={<LandingPage {...landingProps} />} />
+            <Route path="/accueil" element={<LandingPage {...landingProps} />} />
+            <Route element={<DashboardLayout auth={auth} />}>
+              <Route path="/tableau" element={<OverviewPage auth={auth} />} />
+              <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
+              <Route path="/clients" element={<ClientsPage auth={auth} />} />
+              <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
+              <Route path="/wallet" element={<WalletPage auth={auth} />} />
+              <Route path="/generateur-carte" element={<GeneratorAccessPage />} />
+              <Route path="/settings" element={<SettingsPage auth={auth} />} />
+            </Route>
+            <Route path="/abonnement" element={<Navigate to="/tableau" replace />} />
+            <Route path="*" element={<Navigate to="/tableau" replace />} />
+          </>
+        )}
       </Routes>
     </MerchantBillingContext.Provider>
   );

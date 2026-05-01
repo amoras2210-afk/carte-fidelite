@@ -1,8 +1,24 @@
 const path = require("path");
+const fs = require("fs");
 const dotenv = require("dotenv");
 
-// Always load backend/.env (npm may start the process from repo root via `npm run dev`)
-dotenv.config({ path: path.resolve(__dirname, "..", "..", ".env") });
+const backendRoot = path.resolve(__dirname, "..", "..");
+const envPath = path.join(backendRoot, ".env");
+const envLocalPath = path.join(backendRoot, ".env.local");
+
+dotenv.config({ path: envPath });
+dotenv.config({ path: envLocalPath, override: true });
+
+const nodeEnv = process.env.NODE_ENV || "development";
+if (!fs.existsSync(envPath) && nodeEnv !== "production") {
+  const envSavePath = path.join(backendRoot, ".env.save");
+  if (fs.existsSync(envSavePath)) {
+    console.warn(
+      "[env] backend/.env absent — lecture de backend/.env.save (dev uniquement). Créez backend/.env pour la production."
+    );
+    dotenv.config({ path: envSavePath });
+  }
+}
 
 const env = {
   port: Number(process.env.PORT || 4000),

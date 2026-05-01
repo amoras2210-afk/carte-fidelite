@@ -1,18 +1,17 @@
 const db = require("../config/db");
 const ApiError = require("../utils/ApiError");
 
-const ACTIVE_STATES = new Set(["active", "trialing"]);
-
-async function subscriptionGuard(req, _res, next) {
+/** Bloque l’usage métier tant que l’abonnement Stripe n’est pas actif ou en essai. */
+async function subscriptionGuard(req, res, next) {
   try {
-    const result = await db.query("SELECT subscription_status FROM merchants WHERE id = $1", [req.auth.merchantId]);
+    const result = await db.query(`SELECT subscription_status FROM merchants WHERE id = $1`, [req.auth.merchantId]);
     const status = result.rows[0]?.subscription_status || "inactive";
-    if (!ACTIVE_STATES.has(status)) {
-      throw new ApiError(402, "Subscription required", { subscriptionStatus: status }, "SUBSCRIPTION_REQUIRED");
+    if (status === "active" || status === "trialing") {
+      return next();
     }
-    return next();
+    return next(new ApiError(403, "Abonnement actif requis pour utiliser cette fonctionnalité.", null, "SUBSCRIPTION_REQUIRED"));
   } catch (error) {
-    return next(error);
+    next(error);
   }
 }
 

@@ -69,6 +69,13 @@ async function createCheckoutSession(req, res, next) {
 
     return sendSuccess(res, { data: { url: session.url } });
   } catch (error) {
+    if (error?.type && String(error.type).startsWith("Stripe")) {
+      const message =
+        typeof error.message === "string" && error.message.trim()
+          ? error.message
+          : "Erreur Stripe lors de la création du paiement.";
+      return next(new ApiError(502, message, { stripeType: error.type }, "STRIPE_ERROR"));
+    }
     next(error);
   }
 }

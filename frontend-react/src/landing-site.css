@@ -612,6 +612,28 @@
   color: #94a3b8;
 }
 
+.landing-pricing-howto {
+  max-width: 720px;
+  margin: -12px auto 36px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  background: rgba(37, 99, 235, 0.09);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+
+.landing-pricing-howto p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.62;
+  color: #94a3b8;
+}
+
+.landing-pricing-howto strong {
+  color: #e2e8f0;
+  font-weight: 700;
+}
+
 /* Offer grid */
 .landing-offer-grid {
   display: grid;

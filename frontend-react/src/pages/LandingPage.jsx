@@ -56,18 +56,18 @@ const features = [
 const steps = [
   {
     n: "01",
-    title: "Identification sécurisée",
-    body: "Accès réservé aux professionnels avant tout encaissement."
+    title: "Créer votre compte professionnel",
+    body: "Email, mot de passe et nom du commerce : nous en avons besoin pour lier votre paiement Stripe à votre espace dédié."
   },
   {
     n: "02",
-    title: "Souscription Stripe",
-    body: "49,99 € / mois TTC — facturation et résiliation depuis votre espace Stripe."
+    title: "Régler sur Stripe",
+    body: "Juste après l’inscription, redirection vers le paiement sécurisé par carte — 49,99 € / mois TTC. Factures et résiliation dans Stripe."
   },
   {
     n: "03",
-    title: "Mise en ligne",
-    body: "Paramétrez la carte, ouvrez FidélioGen pour le visuel, partagez lien ou QR."
+    title: "Accéder à Loyalty Pro",
+    body: "Abonnement actif : le tableau de bord s’ouvre — clients, QR caisse, cartes wallet, campagnes e-mail et FidélioGen."
   }
 ];
 
@@ -106,6 +106,10 @@ const planIncludes = [
 ];
 
 const faqItems = [
+  {
+    q: "Dois-je créer un compte avant de payer ?",
+    a: "Oui, et c’est volontaire : le compte permet d’associer votre abonnement à votre commerce. Vous créez le compte en quelques secondes, puis vous payez sur Stripe. Tant que l’abonnement n’est pas actif, les outils métier (clients, QR, wallet…) restent fermés ; une fois Stripe validé, vous vous connectez et tout est disponible."
+  },
   {
     q: "Mes clients doivent-ils installer une application ?",
     a: "Non. Loyalty Pro fonctionne avec des cartes wallet et des liens web ; le passage en caisse repose sur votre QR ou votre interface commerçant."
@@ -178,6 +182,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
           </div>
           <nav className="landing-site-nav-links" aria-label="Sections">
             <a href="#tarifs">Offre</a>
+            <a href="#parcours">Parcours</a>
             <a href="#produit">Plateforme</a>
             <a href="#integrations">Écosystème</a>
             <a href="#avis">Références</a>
@@ -186,8 +191,8 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
           <div className="landing-site-nav-cta">
             {hasSession ? (
               <>
-                <Link to="/tableau" className="landing-site-btn landing-site-btn--primary">
-                  Espace client
+                <Link to={subActive ? "/tableau" : "/abonnement"} className="landing-site-btn landing-site-btn--primary">
+                  {subActive ? "Espace client" : "Finaliser l’abonnement"}
                 </Link>
                 <button type="button" className="landing-site-btn landing-site-btn--ghost" onClick={() => auth.setToken("")}>
                   Déconnexion
@@ -319,6 +324,15 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
               </p>
             </header>
 
+            <div className="landing-pricing-howto" role="note">
+              <p>
+                <strong>Comment souscrire ?</strong> Vous créez d’abord un <strong>compte professionnel</strong> (bouton ci-dessous),
+                puis vous êtes <strong>redirigé vers Stripe</strong> pour payer. Les modules métier restent <strong>fermés jusqu’à
+                abonnement actif</strong> ; après validation, vous accédez au tableau de bord complet avec les mêmes identifiants.
+                Déjà client ? Connectez-vous — si le paiement est en attente, une page vous guide pour finaliser.
+              </p>
+            </div>
+
             <div className="landing-offer-grid">
               <div className="landing-offer-aside">
                 <p className="landing-checklist-label">Inclus dans l’abonnement</p>
@@ -386,10 +400,10 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
                           className="landing-site-btn landing-site-btn--primary landing-site-btn--block"
                           onClick={goToProfessionalIdentification}
                         >
-                          Continuer vers le paiement sécurisé
+                          Créer mon compte et payer avec Stripe
                         </button>
                         <p className="landing-checkout-fineprint">
-                          Identification professionnelle requise — page dédiée hors site public marketing.
+                          Compte obligatoire pour lier le paiement à votre commerce — l’application reste fermée jusqu’à abonnement actif.
                         </p>
                       </>
                     )}
@@ -477,7 +491,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
             <header className="landing-section-head">
               <p className="landing-eyebrow">Déploiement</p>
               <h2 id="landing-parcours-title" className="landing-section-h2">
-                Un chemin clair, du premier jour à la première campagne.
+                Compte, paiement Stripe, puis accès à la plateforme.
               </h2>
             </header>
             <ol className="landing-steps-h">
@@ -524,8 +538,8 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
                 Consulter l’offre à 49,99 € / mois
               </a>
               {hasSession ? (
-                <Link to="/tableau" className="landing-site-btn landing-site-btn--outline landing-site-btn--lg">
-                  Accéder à mon espace
+                <Link to={subActive ? "/tableau" : "/abonnement"} className="landing-site-btn landing-site-btn--outline landing-site-btn--lg">
+                  {subActive ? "Accéder à mon espace" : "Finaliser mon abonnement"}
                 </Link>
               ) : null}
             </div>
@@ -547,6 +561,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
           <div className="landing-footer-col">
             <p className="landing-footer-heading">Navigation</p>
             <a href="#tarifs">Offre &amp; tarif</a>
+            <a href="#parcours">Parcours souscription</a>
             <a href="#produit">Plateforme</a>
             <a href="#faq">FAQ</a>
           </div>
