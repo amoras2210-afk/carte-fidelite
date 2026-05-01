@@ -40,6 +40,31 @@ const steps = [
   }
 ];
 
+/** Illustrations marketing — personnages et enseignes fictifs. */
+const testimonials = [
+  {
+    quote:
+      "« Déploiement rapide en boutique : le QR à la caisse a remplacé nos cartons tampons. Les cartes dans Apple Wallet sont un vrai plus pour nos habitués. »",
+    name: "Sophie Martel",
+    meta: "Gérante · Café des Arcades · Bordeaux",
+    initials: "SM"
+  },
+  {
+    quote:
+      "« Campagnes e-mail depuis notre Gmail pro, sans passer par une agence. Interface sobre — l’équipe l’a adoptée en quelques jours. »",
+    name: "Karim Benali",
+    meta: "Directeur · Studio Line Coiffure · Marseille",
+    initials: "KB"
+  },
+  {
+    quote:
+      "« Programme fidélité digital aligné sur nos collections : QR en boutique et pilotage simple. Les exports nous servent pour nos réassorts. »",
+    name: "Claire Aubert",
+    meta: "Fondatrice · Fleurs & Saison · Annecy",
+    initials: "CA"
+  }
+];
+
 const planIncludes = [
   "Programme fidélité digital illimité",
   "QR boutique & gestion des clients",
@@ -89,9 +114,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
       <header className="landing-nav landing-nav--pro">
         <div className="landing-nav-inner landing-nav-inner--pro">
           <div className="landing-nav-brand">
-            <span className="landing-logo-ring">
-              <span className="auth-logo-mark landing-nav-logo landing-nav-logo--pro">LP</span>
-            </span>
+            <img className="landing-brand-logo" src="/logo-loyalty-pro.svg" alt="" width={44} height={44} decoding="async" />
             <div>
               <span className="landing-nav-title landing-nav-title--pro">Loyalty Pro</span>
               <span className="landing-nav-tag landing-nav-tag--pro">Fidélité & CRM léger</span>
@@ -100,6 +123,9 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
           <div className="landing-nav-actions landing-nav-actions--pro">
             <a href="#produit" className="landing-nav-link">
               Produit
+            </a>
+            <a href="#avis" className="landing-nav-link">
+              Références
             </a>
             <a href="#parcours" className="landing-nav-link">
               Déploiement
@@ -226,6 +252,33 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
                 <h3 className="landing-pro-feature-title">{f.title}</h3>
                 <p className="landing-pro-feature-body">{f.body}</p>
               </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="landing-pro-testimonials" id="avis" aria-labelledby="landing-testimonials-heading">
+          <div className="landing-pro-testimonials-head">
+            <h2 id="landing-testimonials-heading" className="landing-pro-section-title landing-pro-section-title--center">
+              Retours d’expérience
+            </h2>
+            <p className="landing-pro-testimonials-disclaimer">
+              Personnages et enseignes ci-dessous sont fictifs — illustration du positionnement produit.
+            </p>
+          </div>
+          <div className="landing-pro-testimonial-grid">
+            {testimonials.map((t) => (
+              <blockquote key={t.initials} className="landing-pro-testimonial-card">
+                <p className="landing-pro-testimonial-quote">{t.quote}</p>
+                <footer className="landing-pro-testimonial-footer">
+                  <span className="landing-pro-testimonial-avatar" aria-hidden>
+                    {t.initials}
+                  </span>
+                  <div>
+                    <cite className="landing-pro-testimonial-name">{t.name}</cite>
+                    <span className="landing-pro-testimonial-meta">{t.meta}</span>
+                  </div>
+                </footer>
+              </blockquote>
             ))}
           </div>
         </section>

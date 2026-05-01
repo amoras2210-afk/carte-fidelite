@@ -42,7 +42,7 @@ export function DashboardLayout({ auth }) {
     <div className="shell">
       <aside className="sidebar" aria-label="Navigation principale">
         <Link to="/tableau" className="sidebar-brand">
-          <span className="sidebar-brand-mark">LP</span>
+          <img className="sidebar-brand-mark-img" src="/logo-loyalty-pro.svg" alt="" width={42} height={42} decoding="async" />
           <span className="sidebar-brand-text">
             <span className="sidebar-brand-title">Loyalty Pro</span>
             <span className="sidebar-brand-sub">Espace commerçant</span>

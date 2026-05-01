@@ -60,7 +60,7 @@ export function AuthPage({ auth }) {
     <div className="auth-shell">
       <div className="auth-panel card">
         <div className="auth-brand-block">
-          <span className="auth-logo-mark">LP</span>
+          <img className="auth-brand-logo-img" src="/logo-loyalty-pro.svg" alt="" width={48} height={48} decoding="async" />
           <div>
             <h1 className="auth-title">Loyalty Pro</h1>
             <p className="auth-tagline">Programme de fidélité digital pour ton commerce.</p>
