@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { apiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 
@@ -9,16 +9,17 @@ export function CampaignsPage({ auth }) {
   const [isLoading, setIsLoading] = useState(true);
   const { showToast } = useToast();
 
-  const loadRecipientCount = async () => {
+  const loadRecipientCount = useCallback(async () => {
     try {
       const response = await apiRequest("/campaigns/email-recipient-count", { token: auth.token });
       setRecipientCount(typeof response.data?.count === "number" ? response.data.count : 0);
     } catch {
       setRecipientCount(null);
     }
-  };
+  }, [auth.token]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    await Promise.resolve();
     setIsLoading(true);
     try {
       const [campaignsRes] = await Promise.all([
@@ -29,11 +30,13 @@ export function CampaignsPage({ auth }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [auth.token, loadRecipientCount]);
 
   useEffect(() => {
-    load().catch((error) => showToast(error.message, "error"));
-  }, []);
+    queueMicrotask(() => {
+      load().catch((error) => showToast(error.message, "error"));
+    });
+  }, [load, showToast]);
 
   const createCampaign = async (event) => {
     event.preventDefault();

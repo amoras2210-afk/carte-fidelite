@@ -12,7 +12,15 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { ToastProvider } from "./components/ToastContext";
 
 function MerchantApp({ auth }) {
-  if (!auth.token) return <AuthPage auth={auth} />;
+  if (!auth.token) {
+    return (
+      <Routes>
+        <Route path="/" element={<Navigate to="/connexion" replace />} />
+        <Route path="/connexion" element={<AuthPage auth={auth} />} />
+        <Route path="*" element={<Navigate to="/connexion" replace />} />
+      </Routes>
+    );
+  }
 
   return (
     <DashboardLayout auth={auth}>
@@ -47,7 +55,6 @@ function App() {
   return (
     <ToastProvider>
       <Routes>
-        {/* Public PWA card (no merchant auth) */}
         <Route path="/card" element={<PublicCardPage />} />
         <Route path="/card/:token" element={<PublicCardPage />} />
         <Route path="/*" element={<MerchantApp auth={auth} />} />

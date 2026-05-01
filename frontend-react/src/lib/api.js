@@ -86,31 +86,54 @@ const ONBOARDING_SESSION_KEY = "onboarding_session_id";
 
 export async function trackOnboarding(payload) {
   const existing = localStorage.getItem(ONBOARDING_SESSION_KEY);
-  const body = {
-    ...payload,
-    sessionId: payload.sessionId || existing || undefined
-  };
-  const response = await fetchWithTimeout(`${API_BASE}/onboarding/events`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body)
-  });
-  const json = await response.json().catch(() => ({}));
-  if (!response.ok || json.ok === false) {
-    throw new Error(formatApiErrorMessage(json));
+
+  async function postEvent(sessionId) {
+    const body = {
+      ...payload,
+      sessionId: payload.sessionId || sessionId || undefined
+    };
+    const response = await fetchWithTimeout(`${API_BASE}/onboarding/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    const json = await response.json().catch(() => ({}));
+    if (!response.ok || json.ok === false) {
+      throw new Error(formatApiErrorMessage(json));
+    }
+    if (json.data?.sessionId) {
+      localStorage.setItem(ONBOARDING_SESSION_KEY, json.data.sessionId);
+    }
+    return json.data.sessionId;
   }
-  if (json.data?.sessionId) {
-    localStorage.setItem(ONBOARDING_SESSION_KEY, json.data.sessionId);
+
+  try {
+    return await postEvent(existing);
+  } catch (error) {
+    const message = String(error?.message || "").toLowerCase();
+    // If browser kept a stale onboarding session id, retry once without it.
+    if (existing && message.includes("onboarding")) {
+      localStorage.removeItem(ONBOARDING_SESSION_KEY);
+      return postEvent(undefined);
+    }
+    throw error;
   }
-  return json.data.sessionId;
 }
 
 export async function linkOnboardingSession(token) {
   const sessionId = localStorage.getItem(ONBOARDING_SESSION_KEY);
   if (!sessionId || !token) return;
-  await apiRequest("/onboarding/link-session", {
-    method: "POST",
-    token,
-    body: { sessionId }
-  });
+  try {
+    await apiRequest("/onboarding/link-session", {
+      method: "POST",
+      token,
+      body: { sessionId }
+    });
+  } catch (error) {
+    // Stale local session ids should never block auth.
+    localStorage.removeItem(ONBOARDING_SESSION_KEY);
+    if (!String(error?.message || "").toLowerCase().includes("onboarding")) {
+      console.warn("[onboarding] link-session skipped:", error?.message || error);
+    }
+  }
 }

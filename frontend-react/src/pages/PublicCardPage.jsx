@@ -69,6 +69,7 @@ export function PublicCardPage() {
     let cancelled = false;
 
     async function load() {
+      await Promise.resolve();
       try {
         setIsLoading(true);
         const response = await apiRequest(`/public/card?token=${encodeURIComponent(token)}`);
@@ -81,9 +82,15 @@ export function PublicCardPage() {
     }
 
     if (!token) {
-      setIsLoading(false);
-      setData(null);
-      return undefined;
+      queueMicrotask(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+          setData(null);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
     }
     load();
     return () => {
