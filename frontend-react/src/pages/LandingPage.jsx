@@ -71,7 +71,6 @@ const steps = [
   }
 ];
 
-/** Illustrations marketing — fictives. */
 const testimonials = [
   {
     quote:
@@ -278,7 +277,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
                         <i />
                         <i />
                       </div>
-                      <span className="landing-mock-chart-label">Illustration interface</span>
+                      <span className="landing-mock-chart-label">Activité récente</span>
                     </div>
                   </div>
                 </div>
@@ -328,9 +327,6 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
                     <li key={line}>{line}</li>
                   ))}
                 </ul>
-                <p className="landing-offer-note">
-                  * Les chiffres de la maquette ci-dessus sont purement décoratifs et n’incarnent pas des résultats garantis.
-                </p>
               </div>
 
               <aside className="landing-checkout-card" aria-label="Paiement">
@@ -454,9 +450,8 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
             <header className="landing-section-head">
               <p className="landing-eyebrow">Références</p>
               <h2 id="landing-avis-title" className="landing-section-h2">
-                Ce que disent les équipes terrain — démonstration.
+                Ce que disent les équipes terrain
               </h2>
-              <p className="landing-testimonials-note">Personnages et enseignes ci-dessous sont fictifs.</p>
             </header>
             <div className="landing-tgrid">
               {testimonials.map((t) => (

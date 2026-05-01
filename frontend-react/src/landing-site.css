@@ -679,13 +679,6 @@
   transform: rotate(-45deg);
 }
 
-.landing-offer-note {
-  margin: 22px 0 0;
-  font-size: 12px;
-  line-height: 1.45;
-  color: #475569;
-}
-
 .landing-checkout-card-inner {
   padding: clamp(26px, 3vw, 32px);
   border-radius: 18px;
@@ -862,12 +855,6 @@
 }
 
 /* Testimonials */
-.landing-testimonials-note {
-  margin: 14px 0 0;
-  font-size: 13px;
-  color: #475569;
-}
-
 .landing-tgrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
