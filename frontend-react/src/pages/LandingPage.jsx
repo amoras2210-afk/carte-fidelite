@@ -5,47 +5,48 @@ import { useToast } from "../components/ToastContext";
 
 const features = [
   {
-    title: "QR & caisse",
-    body: "Scan au comptoir pour ajouter des visites ou des points. Tes clients gardent leur historique sans carte physique."
+    title: "Encaissement & QR",
+    body: "Ajout de visites au comptoir, points et récompenses sans carte physique."
   },
   {
-    title: "Cartes wallet",
-    body: "Ajout Apple Wallet et Google Wallet pour que la carte fidélité reste dans le téléphone, avec ton branding."
+    title: "Wallet Apple & Google",
+    body: "Cartes fidélité dans le téléphone, aux couleurs de votre enseigne."
   },
   {
-    title: "Campagnes email",
-    body: "Envoie des messages promo depuis ton Gmail connecté : annonces, relances, automatisation simple."
+    title: "Relances e-mail",
+    body: "Campagnes et messages depuis votre Gmail professionnel connecté."
   },
   {
     title: "Pilotage",
-    body: "Vue d’ensemble, clients et stats pour voir qui revient et ajuster tes récompenses."
+    body: "Vue clients, historique et indicateurs pour ajuster votre programme."
   }
 ];
 
 const steps = [
   {
-    n: 1,
-    title: "Crée ton compte commerce",
-    body: "Email, mot de passe et nom du commerce — gratuit, en une minute."
+    n: "01",
+    title: "Identification sécurisée",
+    body: "Vérifiez votre commerce avant tout encaissement — accès réservé aux professionnels."
   },
   {
-    n: 2,
-    title: "Souscris depuis cette page",
-    body: "Tout se passe ici : 49,99 € / mois, paiement sécurisé par Stripe."
+    n: "02",
+    title: "Souscription Stripe",
+    body: "49,99 € / mois TTC, paiement carte via Stripe (facturation et résiliation depuis votre espace Stripe)."
   },
   {
-    n: 3,
-    title: "Configure et distribue",
-    body: "Personnalise ta carte, partage le lien ou le QR aux clients et suit les visites depuis le tableau de bord."
+    n: "03",
+    title: "Mise en service",
+    body: "Paramétrez votre carte, diffusez lien ou QR et suivez l’activité depuis votre tableau de bord."
   }
 ];
 
 const planIncludes = [
-  "QR boutique, points et récompenses",
-  "Cartes Apple Wallet & Google Wallet",
-  "Campagnes e-mail via ton Gmail",
-  "Tableau de bord clients et stats",
-  "Mises à jour incluses"
+  "Programme fidélité digital illimité",
+  "QR boutique & gestion des clients",
+  "Passes Apple Wallet & Google Wallet",
+  "Campagnes e-mail (Gmail)",
+  "Statistiques et exports",
+  "Mises à jour produit incluses"
 ];
 
 export function LandingPage({ auth, billing, billingLoading, onBillingRefresh }) {
@@ -60,7 +61,7 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
 
   useEffect(() => {
     if (searchParams.get("paiement") === "annule") {
-      showToast("Paiement annulé — tu peux réessayer quand tu veux dans la section Tarifs.", "info");
+      showToast("Paiement annulé. Vous pouvez reprendre lorsque vous le souhaitez.", "info");
       navigate("/", { replace: true });
     }
   }, [searchParams, navigate, showToast]);
@@ -79,207 +80,176 @@ export function LandingPage({ auth, billing, billingLoading, onBillingRefresh })
     }
   };
 
+  const goToProfessionalIdentification = () => {
+    navigate("/connexion");
+  };
+
   return (
-    <div className="landing-page">
-      <header className="landing-nav">
-        <div className="landing-nav-inner">
+    <div className="landing-page landing-page--pro">
+      <header className="landing-nav landing-nav--pro">
+        <div className="landing-nav-inner landing-nav-inner--pro">
           <div className="landing-nav-brand">
-            <span className="auth-logo-mark landing-nav-logo">LP</span>
+            <span className="landing-logo-ring">
+              <span className="auth-logo-mark landing-nav-logo landing-nav-logo--pro">LP</span>
+            </span>
             <div>
-              <span className="landing-nav-title">Loyalty Pro</span>
-              <span className="landing-nav-tag">Fidélité locale</span>
+              <span className="landing-nav-title landing-nav-title--pro">Loyalty Pro</span>
+              <span className="landing-nav-tag landing-nav-tag--pro">Fidélité & CRM léger</span>
             </div>
           </div>
-          <div className="landing-nav-actions">
+          <div className="landing-nav-actions landing-nav-actions--pro">
+            <a href="#produit" className="landing-nav-link">
+              Produit
+            </a>
+            <a href="#parcours" className="landing-nav-link">
+              Déploiement
+            </a>
             {hasSession ? (
               <>
-                <Link to="/tableau" className="btn-link-primary landing-nav-btn-solid">
-                  Mon espace
+                <Link to="/tableau" className="landing-nav-pill landing-nav-pill--primary">
+                  Espace client
                 </Link>
-                <a href="#tarifs" className="landing-nav-cta">
-                  Tarifs
-                </a>
-                <button type="button" className="ghost landing-nav-logout" onClick={() => auth.setToken("")}>
-                  Déconnexion
+                <button type="button" className="landing-nav-pill landing-nav-pill--ghost" onClick={() => auth.setToken("")}>
+                  Fermer la session
                 </button>
               </>
-            ) : (
-              <>
-                <a href="#tarifs" className="landing-nav-cta">
-                  Tarifs
-                </a>
-                <Link to="/connexion" className="landing-nav-cta landing-nav-cta-strong">
-                  Connexion / S’inscrire
-                </Link>
-              </>
-            )}
+            ) : null}
           </div>
         </div>
       </header>
 
-      <main className="landing-main">
-        <section className="landing-hero">
-          <p className="landing-eyebrow">Pour commerces et indépendants</p>
-          <h1 className="landing-headline">
-            Le programme de fidélité qui vit dans le téléphone de tes clients
-          </h1>
-          <p className="landing-lead">
-            Loyalty Pro regroupe QR en boutique, points, récompenses, cartes wallet et emails depuis ton Gmail —
-            sans développeur ni application à installer pour tes clients.
-          </p>
-          <div className="landing-hero-actions">
-            {hasSession ? (
-              <Link to="/tableau" className="btn-link-primary landing-btn-wide">
-                Ouvrir mon espace marchand
-              </Link>
-            ) : (
-              <Link to="/connexion" className="btn-link-primary landing-btn-wide">
-                Créer mon compte
-              </Link>
-            )}
-            <a href="#fonctionnalites" className="landing-link-anchor">
-              Découvrir les fonctionnalités
-            </a>
-            <a href="#tarifs" className="landing-link-anchor">
-              Voir le tarif
-            </a>
+      <main className="landing-main landing-main--pro">
+        <section className="landing-pro-split" id="tarifs" aria-labelledby="landing-price-heading">
+          <div className="landing-pro-split-copy">
+            <p className="landing-pro-kicker">Solution SaaS pour commerces physiques</p>
+            <h1 id="landing-price-heading" className="landing-pro-headline">
+              La fidélité client professionnelle, sans application à télécharger.
+            </h1>
+            <p className="landing-pro-sub">
+              Loyalty Pro centralise QR caisse, cartes wallet, relances e-mail et pilotage client dans une interface unique —
+              sécurisée, évolutive, pensée pour les équipes en boutique.
+            </p>
+            <ul className="landing-pro-highlights">
+              <li>Paiement et conformité via Stripe</li>
+              <li>Hébergement et chiffrement HTTPS</li>
+              <li>Mise en route guidée en trois étapes</li>
+            </ul>
           </div>
+
+          <aside className="landing-pro-checkout" aria-label="Offre et paiement">
+            <div className="landing-pro-checkout-inner">
+              <p className="landing-pro-checkout-label">Offre tout inclus</p>
+              <div className="landing-pro-price-line">
+                <span className="landing-pro-price-value">49,99&nbsp;€</span>
+                <span className="landing-pro-price-unit">/ mois TTC</span>
+              </div>
+              <p className="landing-pro-checkout-meta">
+                Facturation mensuelle · résiliation depuis votre espace de facturation Stripe
+              </p>
+
+              <ul className="landing-pro-plan-check">
+                {planIncludes.map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
+              </ul>
+
+              {subActive ? (
+                <p className="landing-pro-banner landing-pro-banner--ok">Votre abonnement est actif.</p>
+              ) : null}
+
+              {!billingLoading && !billing?.stripeConfigured && hasSession ? (
+                <p className="landing-pro-banner landing-pro-banner--warn">
+                  Paiement indisponible : configurez Stripe sur l’API ({""}
+                  <code className="mono">STRIPE_SECRET_KEY</code>, <code className="mono">STRIPE_PRICE_ID</code>
+                  ).
+                </p>
+              ) : null}
+
+              <div className="landing-pro-actions">
+                {hasSession ? (
+                  <>
+                    <button
+                      type="button"
+                      className="landing-pro-btn landing-pro-btn--solid"
+                      onClick={startCheckout}
+                      disabled={payRedirecting || billingLoading || !billing?.stripeConfigured || subActive}
+                    >
+                      {payRedirecting
+                        ? "Redirection sécurisée…"
+                        : subActive
+                          ? "Abonnement en cours"
+                          : "Régler par carte (Stripe)"}
+                    </button>
+                    {!subActive ? (
+                      <button
+                        type="button"
+                        className="landing-pro-btn landing-pro-btn--outline"
+                        onClick={() => onBillingRefresh?.()}
+                        disabled={billingLoading}
+                      >
+                        {billingLoading ? "Synchronisation…" : "Actualiser le statut"}
+                      </button>
+                    ) : (
+                      <Link to="/tableau" className="landing-pro-btn landing-pro-btn--solid landing-pro-btn--link">
+                        Ouvrir le tableau de bord
+                      </Link>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <button type="button" className="landing-pro-btn landing-pro-btn--solid" onClick={goToProfessionalIdentification}>
+                      Continuer vers le paiement sécurisé
+                    </button>
+                    <p className="landing-pro-fineprint">
+                      Étape suivante : identification professionnelle obligatoire avant encaissement (domaine réservé, hors page
+                      publique).
+                    </p>
+                  </>
+                )}
+              </div>
+            </div>
+          </aside>
         </section>
 
-        <section className="landing-section" id="fonctionnalites" aria-labelledby="landing-features-heading">
-          <h2 id="landing-features-heading" className="landing-section-title">
-            Ce que tu obtiens avec Loyalty Pro
-          </h2>
-          <p className="landing-section-intro">
-            Une suite pensée pour les petites équipes : tout centralisé dans un tableau de bord clair.
-          </p>
-          <div className="landing-feature-grid">
+        <section className="landing-pro-band" id="produit" aria-labelledby="landing-features-heading">
+          <div className="landing-pro-band-head">
+            <h2 id="landing-features-heading" className="landing-pro-section-title">
+              Une plateforme, quatre leviers
+            </h2>
+            <p className="landing-pro-section-lead">
+              Des modules qui fonctionnent ensemble — sans intégration technique lourde de votre côté.
+            </p>
+          </div>
+          <div className="landing-pro-feature-grid">
             {features.map((f) => (
-              <article key={f.title} className="card landing-feature-card">
-                <h3 className="landing-feature-title">{f.title}</h3>
-                <p className="landing-feature-body muted">{f.body}</p>
+              <article key={f.title} className="landing-pro-feature">
+                <h3 className="landing-pro-feature-title">{f.title}</h3>
+                <p className="landing-pro-feature-body">{f.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className="landing-section landing-pricing-section" id="tarifs" aria-labelledby="landing-price-heading">
-          <h2 id="landing-price-heading" className="landing-section-title">
-            Tarif unique
+        <section className="landing-pro-steps-wrap" id="parcours" aria-labelledby="landing-steps-heading">
+          <h2 id="landing-steps-heading" className="landing-pro-section-title landing-pro-section-title--center">
+            Déploiement standard
           </h2>
-          <p className="landing-section-intro">
-            Un abonnement simple pour tout débloquer — paiement sécurisé par carte via Stripe.
-          </p>
-
-          <div className="landing-pricing-card card">
-            <div className="landing-price-row">
-              <span className="landing-price-amount">49,99&nbsp;€</span>
-              <span className="landing-price-period muted">/ mois TTC</span>
-            </div>
-            <p className="muted landing-price-note">Sans frais cachés — résilie quand tu veux depuis l’espace Stripe après paiement.</p>
-
-            <ul className="landing-plan-list">
-              {planIncludes.map((line) => (
-                <li key={line}>{line}</li>
-              ))}
-            </ul>
-
-            {subActive ? (
-              <p className="landing-price-status landing-price-status-ok">
-                Ton abonnement est actif. Tu peux gérer ta facturation depuis le tableau de bord si besoin.
-              </p>
-            ) : null}
-
-            {!billingLoading && !billing?.stripeConfigured ? (
-              <p className="muted landing-stripe-warning">
-                Paiement indisponible pour le moment : configure Stripe sur ton backend (variables{" "}
-                <code className="mono">STRIPE_SECRET_KEY</code>, <code className="mono">STRIPE_PRICE_ID</code>
-                … puis redémarre le service).
-              </p>
-            ) : null}
-
-            <div className="landing-price-actions stack">
-              {hasSession ? (
-                <>
-                  <button
-                    type="button"
-                    className="landing-pay-btn"
-                    onClick={startCheckout}
-                    disabled={payRedirecting || billingLoading || !billing?.stripeConfigured || subActive}
-                  >
-                    {payRedirecting
-                      ? "Redirection vers Stripe…"
-                      : subActive
-                        ? "Déjà abonné"
-                        : "Payer avec Stripe"}
-                  </button>
-                  {!subActive ? (
-                    <button type="button" className="ghost landing-verify-btn" onClick={() => onBillingRefresh?.()} disabled={billingLoading}>
-                      {billingLoading ? "Actualisation…" : "Actualiser mon statut après paiement"}
-                    </button>
-                  ) : (
-                    <Link to="/tableau" className="btn-link-primary landing-btn-wide">
-                      Aller au tableau de bord
-                    </Link>
-                  )}
-                </>
-              ) : (
-                <>
-                  <Link to="/connexion" className="btn-link-primary landing-btn-wide">
-                    Créer un compte ou me connecter pour payer
-                  </Link>
-                  <p className="muted landing-price-footnote">
-                    Une fois connecté, reviens sur cette page : le bouton « Payer avec Stripe » apparaît ici.
-                  </p>
-                </>
-              )}
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-section landing-section-alt" aria-labelledby="landing-steps-heading">
-          <h2 id="landing-steps-heading" className="landing-section-title">
-            Comment ça marche ?
-          </h2>
-          <p className="landing-section-intro">
-            Trois étapes pour passer du papier-cartes au digital.
-          </p>
-          <ol className="landing-steps">
+          <ol className="landing-pro-steps">
             {steps.map((s) => (
-              <li key={s.n} className="landing-step card">
-                <span className="landing-step-num" aria-hidden>
-                  {s.n}
-                </span>
+              <li key={s.n} className="landing-pro-step">
+                <span className="landing-pro-step-index">{s.n}</span>
                 <div>
-                  <h3 className="landing-step-title">{s.title}</h3>
-                  <p className="muted landing-step-body">{s.body}</p>
+                  <h3 className="landing-pro-step-title">{s.title}</h3>
+                  <p className="landing-pro-step-body">{s.body}</p>
                 </div>
               </li>
             ))}
           </ol>
         </section>
-
-        <section className="landing-section landing-cta-block">
-          <div className="card landing-cta-card">
-            <h2 className="landing-cta-title">Une question avant de commencer ?</h2>
-            <p className="muted landing-cta-text">
-              Crée ton compte gratuitement, consulte les tarifs ci-dessus puis paie en ligne quand tu es prêt.
-            </p>
-            {hasSession ? (
-              <Link to="/tableau" className="btn-link-primary landing-btn-wide">
-                Accéder à mon espace
-              </Link>
-            ) : (
-              <Link to="/connexion" className="btn-link-primary landing-btn-wide">
-                Commencer maintenant
-              </Link>
-            )}
-          </div>
-        </section>
       </main>
 
-      <footer className="landing-footer muted">
-        <span>Loyalty Pro — programme de fidélité digital pour ton commerce.</span>
+      <footer className="landing-footer landing-footer--pro">
+        <span>© Loyalty Pro · Paiement traité par Stripe · Usage réservé aux professionnels</span>
       </footer>
     </div>
   );
