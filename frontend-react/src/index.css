@@ -905,6 +905,26 @@ pre {
   box-shadow: 0 4px 14px rgba(37, 99, 235, 0.12);
 }
 
+.landing-nav-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.landing-nav-btn-solid {
+  padding: 10px 14px;
+  font-size: 14px;
+  border: 1px solid #1d4ed8;
+}
+
+.landing-nav-logout {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 12px;
+}
+
 .landing-main {
   flex: 1;
   width: 100%;

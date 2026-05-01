@@ -64,9 +64,9 @@ export function BillingRequiredPage({ auth, billing, onRefresh, showToast }) {
         </div>
 
         <p className="muted billing-public-note">
-          <Link to="/accueil">Voir la page d&apos;accueil publique</Link>
+          <Link to="/">Retour à la page d&apos;accueil</Link>
           {" · "}
-          <Link to="/connexion">Page connexion / autre compte</Link>
+          <Link to="/connexion">Connexion / autre compte</Link>
         </p>
 
         {!billing?.stripeConfigured ? (

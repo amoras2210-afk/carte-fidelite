@@ -3,7 +3,7 @@ import { useTheme } from "../context/ThemeContext.jsx";
 
 /** Navigation desktop. Barre mobile : 4 entrées (pas de sidebar sur petit écran). */
 const NAV_LINKS = [
-  { to: "/", label: "Tableau de bord", mobile: true },
+  { to: "/tableau", label: "Tableau de bord", mobile: true },
   { to: "/clients", label: "Clients", mobile: true },
   { to: "/wallet", label: "Cartes wallet", mobile: false },
   { to: "/campaigns", label: "Campagnes", mobile: true },
@@ -17,15 +17,15 @@ const PAGE_META = [
   { prefix: "/wallet", title: "Cartes wallet", subtitle: "Apple Wallet et Google Wallet" },
   { prefix: "/clients", title: "Clients", subtitle: "Fiches, points et scan QR" },
   { prefix: "/analytics", title: "Statistiques", subtitle: "Activité et rétention" },
-  { prefix: "/", title: "Tableau de bord", subtitle: "Vue d’ensemble" }
+  { prefix: "/tableau", title: "Tableau de bord", subtitle: "Vue d’ensemble" }
 ];
 
 function pageMetaForPath(pathname) {
-  if (pathname === "/") {
-    return PAGE_META.find((p) => p.prefix === "/") || PAGE_META[0];
+  if (pathname === "/tableau") {
+    return PAGE_META.find((p) => p.prefix === "/tableau") || PAGE_META[0];
   }
-  const sorted = [...PAGE_META].filter((p) => p.prefix !== "/").sort((a, b) => b.prefix.length - a.prefix.length);
-  return sorted.find((p) => pathname.startsWith(p.prefix)) || PAGE_META.find((p) => p.prefix === "/") || PAGE_META[0];
+  const sorted = [...PAGE_META].filter((p) => p.prefix !== "/tableau").sort((a, b) => b.prefix.length - a.prefix.length);
+  return sorted.find((p) => pathname.startsWith(p.prefix)) || PAGE_META.find((p) => p.prefix === "/tableau") || PAGE_META[0];
 }
 
 export function DashboardLayout({ auth }) {
@@ -33,14 +33,15 @@ export function DashboardLayout({ auth }) {
   const { theme, toggleTheme } = useTheme();
   const meta = pageMetaForPath(location.pathname);
 
-  const isActive = (to) => (to === "/" ? location.pathname === "/" : location.pathname.startsWith(to));
+  const isActive = (to) =>
+    to === "/tableau" ? location.pathname === "/tableau" : location.pathname.startsWith(to);
 
   const mobileLinks = NAV_LINKS.filter((item) => item.mobile);
 
   return (
     <div className="shell">
       <aside className="sidebar" aria-label="Navigation principale">
-        <Link to="/" className="sidebar-brand">
+        <Link to="/tableau" className="sidebar-brand">
           <span className="sidebar-brand-mark">LP</span>
           <span className="sidebar-brand-text">
             <span className="sidebar-brand-title">Loyalty Pro</span>

@@ -37,7 +37,9 @@ const steps = [
   }
 ];
 
-export function LandingPage() {
+export function LandingPage({ auth }) {
+  const hasSession = Boolean(auth?.token);
+
   return (
     <div className="landing-page">
       <header className="landing-nav">
@@ -49,9 +51,25 @@ export function LandingPage() {
               <span className="landing-nav-tag">Fidélité locale</span>
             </div>
           </div>
-          <Link to="/connexion" className="landing-nav-cta">
-            Connexion / S’inscrire
-          </Link>
+          <div className="landing-nav-actions">
+            {hasSession ? (
+              <>
+                <Link to="/tableau" className="btn-link-primary landing-nav-btn-solid">
+                  Mon espace
+                </Link>
+                <Link to="/abonnement" className="landing-nav-cta">
+                  Abonnement
+                </Link>
+                <button type="button" className="ghost landing-nav-logout" onClick={() => auth.setToken("")}>
+                  Déconnexion
+                </button>
+              </>
+            ) : (
+              <Link to="/connexion" className="landing-nav-cta">
+                Connexion / S’inscrire
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -66,8 +84,11 @@ export function LandingPage() {
             sans développeur ni application à installer pour tes clients.
           </p>
           <div className="landing-hero-actions">
-            <Link to="/connexion" className="btn-link-primary landing-btn-wide">
-              Créer mon compte et voir les tarifs
+            <Link
+              to={hasSession ? "/tableau" : "/connexion"}
+              className="btn-link-primary landing-btn-wide"
+            >
+              {hasSession ? "Ouvrir mon espace marchand" : "Créer mon compte et voir les tarifs"}
             </Link>
             <a href="#fonctionnalites" className="landing-link-anchor">
               Découvrir les fonctionnalités
@@ -121,8 +142,11 @@ export function LandingPage() {
               Tu crées ton compte sur la page suivante, puis tu finalises l’abonnement avec Stripe pour débloquer
               l’accès complet. Déjà inscrit ? Connecte-toi directement.
             </p>
-            <Link to="/connexion" className="btn-link-primary landing-btn-wide">
-              Commencer maintenant
+            <Link
+              to={hasSession ? "/tableau" : "/connexion"}
+              className="btn-link-primary landing-btn-wide"
+            >
+              {hasSession ? "Accéder à mon espace" : "Commencer maintenant"}
             </Link>
           </div>
         </section>

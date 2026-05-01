@@ -87,7 +87,7 @@ export function AuthPage({ auth }) {
               <button type="button" className="ghost" onClick={() => auth.setToken("")}>
                 Se déconnecter
               </button>
-              <Link to="/accueil" className="landing-nav-cta" style={{ textDecoration: "none" }}>
+              <Link to="/" className="landing-nav-cta" style={{ textDecoration: "none" }}>
                 Page d&apos;accueil
               </Link>
             </div>

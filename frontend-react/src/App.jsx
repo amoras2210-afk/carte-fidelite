@@ -53,8 +53,8 @@ function MerchantApp({ auth }) {
   if (!auth.token) {
     return (
       <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/accueil" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage auth={auth} />} />
+        <Route path="/accueil" element={<LandingPage auth={auth} />} />
         <Route path="/connexion" element={<AuthPage auth={auth} />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -66,9 +66,12 @@ function MerchantApp({ auth }) {
   if (billingLoading && !billing) {
     return (
       <Routes>
-        <Route path="/accueil" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage auth={auth} />} />
+        <Route path="/accueil" element={<LandingPage auth={auth} />} />
         <Route path="/connexion" element={<AuthPage auth={auth} />} />
-        <Route path="*" element={<BillingLoadingScreen />} />
+        <Route path="/tableau" element={<BillingLoadingScreen />} />
+        <Route path="/abonnement" element={<BillingLoadingScreen />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
@@ -76,32 +79,34 @@ function MerchantApp({ auth }) {
   if (!isActive) {
     return (
       <Routes>
-        <Route path="/accueil" element={<LandingPage />} />
+        <Route path="/" element={<LandingPage auth={auth} />} />
+        <Route path="/accueil" element={<LandingPage auth={auth} />} />
         <Route path="/connexion" element={<AuthPage auth={auth} />} />
         <Route
           path="/abonnement"
           element={<BillingRequiredPage auth={auth} billing={billing} onRefresh={refreshBilling} showToast={showToast} />}
         />
-        <Route path="/" element={<Navigate to="/abonnement" replace />} />
-        <Route path="*" element={<Navigate to="/abonnement" replace />} />
+        <Route path="/tableau" element={<Navigate to="/abonnement" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
   }
 
   return (
     <Routes>
-      <Route path="/accueil" element={<LandingPage />} />
-      <Route path="/connexion" element={<Navigate to="/" replace />} />
-      <Route path="/abonnement" element={<Navigate to="/" replace />} />
+      <Route path="/" element={<LandingPage auth={auth} />} />
+      <Route path="/accueil" element={<LandingPage auth={auth} />} />
+      <Route path="/connexion" element={<Navigate to="/tableau" replace />} />
+      <Route path="/abonnement" element={<Navigate to="/tableau" replace />} />
       <Route element={<DashboardLayout auth={auth} />}>
-        <Route path="/" element={<OverviewPage auth={auth} />} />
+        <Route path="/tableau" element={<OverviewPage auth={auth} />} />
         <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
         <Route path="/clients" element={<ClientsPage auth={auth} />} />
         <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
         <Route path="/wallet" element={<WalletPage auth={auth} />} />
         <Route path="/settings" element={<SettingsPage auth={auth} />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<Navigate to="/tableau" replace />} />
     </Routes>
   );
 }
