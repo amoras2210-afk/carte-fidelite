@@ -1,4 +1,4 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { useTheme } from "../context/ThemeContext.jsx";
 
 /** Navigation desktop. Barre mobile : 4 entrées (pas de sidebar sur petit écran). */
@@ -28,7 +28,7 @@ function pageMetaForPath(pathname) {
   return sorted.find((p) => pathname.startsWith(p.prefix)) || PAGE_META.find((p) => p.prefix === "/") || PAGE_META[0];
 }
 
-export function DashboardLayout({ auth, children }) {
+export function DashboardLayout({ auth }) {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const meta = pageMetaForPath(location.pathname);
@@ -78,7 +78,9 @@ export function DashboardLayout({ auth, children }) {
             </button>
           </div>
         </header>
-        <main className="content-inner">{children}</main>
+        <main className="content-inner">
+          <Outlet />
+        </main>
       </section>
 
       <nav className="mobile-nav" aria-label="Navigation mobile">

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { apiRequest, linkOnboardingSession, trackOnboarding } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 
@@ -72,6 +73,26 @@ export function AuthPage({ auth }) {
           <li>Points et récompenses en quelques clics</li>
           <li>Emails promo depuis ton Gmail</li>
         </ul>
+
+        {auth.token ? (
+          <div className="card subtle auth-session-banner stack">
+            <p className="muted" style={{ margin: 0 }}>
+              Une session est déjà enregistrée sur cet appareil. Pour payer l&apos;abonnement ou utiliser un autre compte,
+              choisis une option ci-dessous.
+            </p>
+            <div className="row wrap">
+              <Link to="/abonnement" className="btn-link-primary">
+                Retour au paiement / abonnement
+              </Link>
+              <button type="button" className="ghost" onClick={() => auth.setToken("")}>
+                Se déconnecter
+              </button>
+              <Link to="/accueil" className="landing-nav-cta" style={{ textDecoration: "none" }}>
+                Page d&apos;accueil
+              </Link>
+            </div>
+          </div>
+        ) : null}
 
         <form className="form auth-form" onSubmit={handleLogin}>
           <label className="field-label">

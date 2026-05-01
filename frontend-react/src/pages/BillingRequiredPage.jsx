@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { createBillingCheckoutSession } from "../lib/api";
 
 function statusLabel(status) {
@@ -61,6 +62,12 @@ export function BillingRequiredPage({ auth, billing, onRefresh, showToast }) {
             Se déconnecter
           </button>
         </div>
+
+        <p className="muted billing-public-note">
+          <Link to="/accueil">Voir la page d&apos;accueil publique</Link>
+          {" · "}
+          <Link to="/connexion">Page connexion / autre compte</Link>
+        </p>
 
         {!billing?.stripeConfigured ? (
           <p className="muted">Paiement indisponible pour le moment : configuration Stripe manquante sur le serveur.</p>
