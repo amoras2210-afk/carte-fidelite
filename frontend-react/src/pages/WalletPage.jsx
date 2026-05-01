@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useMerchantBilling } from "../context/MerchantBillingContext.jsx";
 import { apiRequest } from "../lib/api";
 import { useToast } from "../components/ToastContext";
 
 export function WalletPage({ auth }) {
+  const { subscriptionActive } = useMerchantBilling() ?? {};
   const [diagnostics, setDiagnostics] = useState(null);
   const [googleClientId, setGoogleClientId] = useState("");
   const [googlePayload, setGooglePayload] = useState("");
@@ -114,6 +116,28 @@ export function WalletPage({ auth }) {
           </div>
         ) : (
           <p className="muted">Chargement…</p>
+        )}
+      </article>
+
+      <article className="card">
+        <h2 className="section-heading">Générateur visuel FidélioGen</h2>
+        <p className="muted">
+          Créez le rendu graphique de votre carte (couleurs, logo, tampons, QR compatible Loyalty Pro) et exportez en PNG.
+          Les passes Apple / Google Wallet restent générées depuis les fiches clients ; FidélioGen sert au visuel marketing et à
+          la mise en page.
+        </p>
+        {subscriptionActive ? (
+          <div className="row wrap wallet-guide-cta">
+            <Link className="link-btn" to="/generateur-carte">
+              Ouvrir le studio FidélioGen
+            </Link>
+            <span className="muted">Inclus tant que votre abonnement Stripe est actif.</span>
+          </div>
+        ) : (
+          <p className="muted">
+            Le studio graphique est débloqué avec un abonnement payant. Finalisez le paiement depuis la page publique (offre à
+            49,99 € / mois), puis actualisez cette page.
+          </p>
         )}
       </article>
 

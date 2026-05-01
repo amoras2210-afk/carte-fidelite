@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { MerchantBillingContext } from "./context/MerchantBillingContext.jsx";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { AuthPage } from "./pages/AuthPage";
 import { LandingPage } from "./pages/LandingPage";
@@ -10,6 +11,7 @@ import { AnalyticsPage } from "./pages/AnalyticsPage";
 import { ClientsPage } from "./pages/ClientsPage";
 import { CampaignsPage } from "./pages/CampaignsPage";
 import { WalletPage } from "./pages/WalletPage";
+import { GeneratorAccessPage } from "./pages/GeneratorAccessPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ToastProvider } from "./components/ToastContext";
 import { useToast } from "./components/ToastContext";
@@ -36,8 +38,10 @@ function MerchantApp({ auth }) {
   useEffect(() => {
     if (!auth.token) {
       setBilling(null);
+      setBillingLoading(false);
       return;
     }
+    setBillingLoading(true);
     queueMicrotask(() => {
       refreshBilling();
     });
@@ -49,6 +53,19 @@ function MerchantApp({ auth }) {
     billingLoading: Boolean(auth.token && billingLoading),
     onBillingRefresh: refreshBilling
   };
+
+  const subscriptionActive =
+    billing?.subscriptionStatus === "active" || billing?.subscriptionStatus === "trialing";
+
+  const merchantBillingValue = useMemo(
+    () => ({
+      billing,
+      billingLoading,
+      refreshBilling,
+      subscriptionActive
+    }),
+    [billing, billingLoading, refreshBilling, subscriptionActive]
+  );
 
   if (!auth.token) {
     return (
@@ -62,20 +79,23 @@ function MerchantApp({ auth }) {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<LandingPage {...landingProps} />} />
-      <Route path="/accueil" element={<LandingPage {...landingProps} />} />
-      <Route path="/connexion" element={<Navigate to="/tableau" replace />} />
-      <Route element={<DashboardLayout auth={auth} />}>
-        <Route path="/tableau" element={<OverviewPage auth={auth} />} />
-        <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
-        <Route path="/clients" element={<ClientsPage auth={auth} />} />
-        <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
-        <Route path="/wallet" element={<WalletPage auth={auth} />} />
-        <Route path="/settings" element={<SettingsPage auth={auth} />} />
-      </Route>
-      <Route path="*" element={<Navigate to="/tableau" replace />} />
-    </Routes>
+    <MerchantBillingContext.Provider value={merchantBillingValue}>
+      <Routes>
+        <Route path="/" element={<LandingPage {...landingProps} />} />
+        <Route path="/accueil" element={<LandingPage {...landingProps} />} />
+        <Route path="/connexion" element={<Navigate to="/tableau" replace />} />
+        <Route element={<DashboardLayout auth={auth} />}>
+          <Route path="/tableau" element={<OverviewPage auth={auth} />} />
+          <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
+          <Route path="/clients" element={<ClientsPage auth={auth} />} />
+          <Route path="/campaigns" element={<CampaignsPage auth={auth} />} />
+          <Route path="/wallet" element={<WalletPage auth={auth} />} />
+          <Route path="/generateur-carte" element={<GeneratorAccessPage />} />
+          <Route path="/settings" element={<SettingsPage auth={auth} />} />
+        </Route>
+        <Route path="*" element={<Navigate to="/tableau" replace />} />
+      </Routes>
+    </MerchantBillingContext.Provider>
   );
 }
 

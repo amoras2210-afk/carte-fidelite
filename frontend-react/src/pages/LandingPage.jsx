@@ -19,6 +19,10 @@ const features = [
   {
     title: "Pilotage",
     body: "Vue clients, historique et indicateurs pour ajuster votre programme."
+  },
+  {
+    title: "Studio FidélioGen",
+    body: "Générateur visuel pour votre carte fidélité : QR compatible Loyalty Pro, personnalisation complète et export PNG haute définition — inclus dans l’offre souscrite."
   }
 ];
 
@@ -36,7 +40,7 @@ const steps = [
   {
     n: "03",
     title: "Mise en service",
-    body: "Paramétrez votre carte, diffusez lien ou QR et suivez l’activité depuis votre tableau de bord."
+    body: "Paramétrez votre carte, utilisez le studio FidélioGen pour le visuel, diffusez lien ou QR et suivez l’activité depuis votre tableau de bord."
   }
 ];
 
@@ -69,6 +73,7 @@ const planIncludes = [
   "Programme fidélité digital illimité",
   "QR boutique & gestion des clients",
   "Passes Apple Wallet & Google Wallet",
+  "Studio FidélioGen — générateur visuel de carte + export PNG (fichiers inclus)",
   "Campagnes e-mail (Gmail)",
   "Statistiques et exports",
   "Mises à jour produit incluses"

@@ -1,8 +1,9 @@
 import { Link, Outlet, useLocation } from "react-router-dom";
+import { useMerchantBilling } from "../context/MerchantBillingContext.jsx";
 import { useTheme } from "../context/ThemeContext.jsx";
 
-/** Navigation desktop. Barre mobile : 4 entrées (pas de sidebar sur petit écran). */
-const NAV_LINKS = [
+/** Navigation desktop. Barre mobile : entrées avec mobile: true uniquement. */
+const NAV_LINKS_BASE = [
   { to: "/tableau", label: "Tableau de bord", mobile: true },
   { to: "/clients", label: "Clients", mobile: true },
   { to: "/wallet", label: "Cartes wallet", mobile: false },
@@ -14,6 +15,7 @@ const NAV_LINKS = [
 const PAGE_META = [
   { prefix: "/settings", title: "Paramètres", subtitle: "Commerce, carte fidélité et emails" },
   { prefix: "/campaigns", title: "Campagnes", subtitle: "Annonces envoyées depuis ton Gmail" },
+  { prefix: "/generateur-carte", title: "FidélioGen", subtitle: "Générateur visuel de carte fidélité" },
   { prefix: "/wallet", title: "Cartes wallet", subtitle: "Apple Wallet et Google Wallet" },
   { prefix: "/clients", title: "Clients", subtitle: "Fiches, points et scan QR" },
   { prefix: "/analytics", title: "Statistiques", subtitle: "Activité et rétention" },
@@ -31,12 +33,26 @@ function pageMetaForPath(pathname) {
 export function DashboardLayout({ auth }) {
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
+  const { subscriptionActive } = useMerchantBilling() ?? {};
   const meta = pageMetaForPath(location.pathname);
 
-  const isActive = (to) =>
-    to === "/tableau" ? location.pathname === "/tableau" : location.pathname.startsWith(to);
+  const navLinks =
+    subscriptionActive === true
+      ? [
+          ...NAV_LINKS_BASE.slice(0, 3),
+          { to: "/generateur-carte", label: "Générateur carte", mobile: false },
+          ...NAV_LINKS_BASE.slice(3)
+        ]
+      : NAV_LINKS_BASE;
 
-  const mobileLinks = NAV_LINKS.filter((item) => item.mobile);
+  const isActive = (to) =>
+    to === "/tableau"
+      ? location.pathname === "/tableau"
+      : to === "/generateur-carte"
+        ? location.pathname === "/generateur-carte"
+        : location.pathname.startsWith(to);
+
+  const mobileLinks = navLinks.filter((item) => item.mobile);
 
   return (
     <div className="shell">
@@ -49,7 +65,7 @@ export function DashboardLayout({ auth }) {
           </span>
         </Link>
         <nav className="sidebar-nav">
-          {NAV_LINKS.map((item) => (
+          {navLinks.map((item) => (
             <Link key={item.to} className={`nav-link ${isActive(item.to) ? "active" : ""}`} to={item.to}>
               {item.label}
             </Link>

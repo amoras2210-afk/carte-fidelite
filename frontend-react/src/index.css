@@ -1686,6 +1686,26 @@ pre {
   margin-top: 6px;
 }
 
+.generator-access-toolbar {
+  align-items: flex-start;
+}
+
+.generator-access-frame-wrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--bg-page);
+  min-height: min(82vh, 920px);
+}
+
+.generator-access-iframe {
+  width: 100%;
+  height: min(82vh, 920px);
+  border: none;
+  display: block;
+  background: #09090b;
+}
+
 .wallet-panel {
   border: 1px solid var(--border);
   border-radius: var(--radius);

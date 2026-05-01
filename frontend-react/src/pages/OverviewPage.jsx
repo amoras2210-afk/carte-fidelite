@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../lib/api";
+import { useMerchantBilling } from "../context/MerchantBillingContext.jsx";
 import { useToast } from "../components/ToastContext";
 
 export function OverviewPage({ auth }) {
+  const { subscriptionActive } = useMerchantBilling() ?? {};
   const [stats, setStats] = useState({ clients: 0, points: 0, rewards: 0, visits: 0 });
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -53,6 +55,11 @@ export function OverviewPage({ auth }) {
           <Link className="quick-link" to="/campaigns">
             Nouvelle campagne
           </Link>
+          {subscriptionActive ? (
+            <Link className="quick-link" to="/generateur-carte">
+              FidélioGen (carte visuelle)
+            </Link>
+          ) : null}
         </div>
       </div>
 
