@@ -36,7 +36,10 @@ const env = {
   appleWalletPassTypeIdentifier: process.env.APPLE_WALLET_PASS_TYPE_IDENTIFIER || "pass.com.yourcompany.loyalty",
   appleWalletTeamIdentifier: process.env.APPLE_WALLET_TEAM_IDENTIFIER || "YOUR_TEAM_IDENTIFIER",
   googleWalletIssuerId: process.env.GOOGLE_WALLET_ISSUER_ID || "",
-  googleWalletClassSuffix: process.env.GOOGLE_WALLET_CLASS_SUFFIX || "loyalty_class"
+  googleWalletClassSuffix: process.env.GOOGLE_WALLET_CLASS_SUFFIX || "loyalty_class",
+  stripeSecretKey: process.env.STRIPE_SECRET_KEY || "",
+  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || "",
+  stripePriceId: process.env.STRIPE_PRICE_ID || ""
 };
 
 module.exports = env;

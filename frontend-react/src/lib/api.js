@@ -137,3 +137,16 @@ export async function linkOnboardingSession(token) {
     }
   }
 }
+
+export async function getBillingStatus(token) {
+  return apiRequest("/billing/status", { token, retries: 0 });
+}
+
+export async function createBillingCheckoutSession(token) {
+  return apiRequest("/billing/checkout-session", {
+    token,
+    method: "POST",
+    body: {},
+    retries: 0
+  });
+}

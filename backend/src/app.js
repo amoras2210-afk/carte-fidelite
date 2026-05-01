@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const apiLimiter = require("./middleware/rateLimiter");
+const billingRoutes = require("./routes/billingRoutes");
+const { handleBillingWebhook } = require("./controllers/billingWebhookController");
 const authRoutes = require("./routes/authRoutes");
 const clientRoutes = require("./routes/clientRoutes");
 const walletRoutes = require("./routes/walletRoutes");
@@ -23,6 +25,7 @@ const app = express();
 
 app.use(helmet());
 app.use(cors());
+app.post("/api/billing/webhook", express.raw({ type: "application/json" }), handleBillingWebhook);
 app.use(express.json({ limit: "5mb" }));
 app.use(requestLogger);
 app.use("/api", apiLimiter);
@@ -52,6 +55,7 @@ app.use("/api/clients", clientRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/campaigns", campaignRoutes);
 app.use("/api/settings", settingsRoutes);
+app.use("/api/billing", billingRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/public", publicRoutes);
 

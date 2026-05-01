@@ -10,7 +10,8 @@ const MIGRATION_FILES = [
   "../../database/migration_005_review_notifications.sql",
   "../../database/migration_006_card_design.sql",
   "../../database/migration_007_google_mail_oauth.sql",
-  "../../database/migration_008_email_automations.sql"
+  "../../database/migration_008_email_automations.sql",
+  "../../database/migration_009_stripe_billing.sql"
 ];
 
 async function run() {

@@ -786,6 +786,24 @@ pre {
   color: #fff;
 }
 
+.btn-link-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  background: #2563eb;
+  border: 1px solid #1d4ed8;
+  color: #fff;
+}
+
+.btn-link-primary:hover {
+  background: #1d4ed8;
+}
+
 /* Public card (PWA) */
 .public-shell {
   min-height: 100vh;

@@ -6,7 +6,8 @@ const apiLimiter = rateLimit({
   limit: env.rateLimitMaxRequests,
   standardHeaders: "draft-7",
   legacyHeaders: false,
-  message: { error: "Too many requests, try again later." }
+  message: { error: "Too many requests, try again later." },
+  skip: (req) => req.method === "POST" && req.originalUrl?.replace(/\/$/, "").endsWith("/api/billing/webhook")
 });
 
 module.exports = apiLimiter;

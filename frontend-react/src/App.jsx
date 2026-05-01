@@ -1,7 +1,9 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { AuthPage } from "./pages/AuthPage";
+import { LandingPage } from "./pages/LandingPage";
+import { BillingRequiredPage } from "./pages/BillingRequiredPage";
 import { PublicCardPage } from "./pages/PublicCardPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
@@ -10,15 +12,57 @@ import { CampaignsPage } from "./pages/CampaignsPage";
 import { WalletPage } from "./pages/WalletPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ToastProvider } from "./components/ToastContext";
+import { useToast } from "./components/ToastContext";
+import { getBillingStatus } from "./lib/api";
 
 function MerchantApp({ auth }) {
+  const { showToast } = useToast();
+  const [billing, setBilling] = useState(null);
+  const [billingLoading, setBillingLoading] = useState(false);
+
+  const refreshBilling = useCallback(async () => {
+    if (!auth.token) return;
+    setBillingLoading(true);
+    try {
+      const response = await getBillingStatus(auth.token);
+      setBilling(response.data);
+    } catch (error) {
+      showToast(error.message, "error");
+    } finally {
+      setBillingLoading(false);
+    }
+  }, [auth.token, showToast]);
+
+  useEffect(() => {
+    if (!auth.token) return;
+    queueMicrotask(() => {
+      refreshBilling();
+    });
+  }, [auth.token, refreshBilling]);
+
   if (!auth.token) {
     return (
       <Routes>
-        <Route path="/" element={<Navigate to="/connexion" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/connexion" element={<AuthPage auth={auth} />} />
-        <Route path="*" element={<Navigate to="/connexion" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+    );
+  }
+
+  const isActive = billing?.subscriptionStatus === "active" || billing?.subscriptionStatus === "trialing";
+  if (billingLoading && !billing) {
+    return (
+      <div className="auth-shell">
+        <article className="card auth-panel">
+          <p className="muted">Vérification de l'abonnement...</p>
+        </article>
+      </div>
+    );
+  }
+  if (!isActive) {
+    return (
+      <BillingRequiredPage auth={auth} billing={billing} onRefresh={refreshBilling} showToast={showToast} />
     );
   }
 

@@ -36,7 +36,7 @@ export function AuthPage({ auth }) {
   const handleRegister = async () => {
     setIsLoading(true);
     try {
-      await apiRequest("/auth/register", {
+      const response = await apiRequest("/auth/register", {
         method: "POST",
         body: {
           businessName: businessName.trim() || "Mon commerce",
@@ -44,7 +44,11 @@ export function AuthPage({ auth }) {
           password
         }
       });
-      showToast("Compte créé. Tu peux te connecter.", "success");
+      const token = response.data?.token;
+      await trackOnboarding({ step: 3, action: "complete" });
+      await linkOnboardingSession(token);
+      auth.setToken(token);
+      showToast("Compte créé. Passe au paiement pour activer ton accès.", "success");
     } catch (error) {
       showToast(error.message, "error");
     } finally {
