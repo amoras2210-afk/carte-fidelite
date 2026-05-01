@@ -1,9 +1,20 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { apiRequest } from "../lib/api";
+import { useToast } from "../components/ToastContext";
 
 export function OverviewPage({ auth }) {
   const [stats, setStats] = useState({ clients: 0, points: 0, rewards: 0, visits: 0 });
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (searchParams.get("paiement") === "reussi") {
+      showToast("Paiement confirmé — merci ! Ton espace Loyalty Pro est à jour.", "success");
+      navigate("/tableau", { replace: true });
+    }
+  }, [searchParams, navigate, showToast]);
 
   useEffect(() => {
     async function load() {

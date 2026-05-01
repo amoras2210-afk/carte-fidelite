@@ -1,6 +1,5 @@
 const { Router } = require("express");
 const authMiddleware = require("../middleware/auth");
-const subscriptionGuard = require("../middleware/subscriptionGuard");
 const {
   listClients,
   createClient,
@@ -16,7 +15,6 @@ const {
 const router = Router();
 
 router.use(authMiddleware);
-router.use(subscriptionGuard);
 router.get("/export.csv", exportClientsCsv);
 router.post("/import/preview", previewImport);
 router.post("/import/commit", commitImport);

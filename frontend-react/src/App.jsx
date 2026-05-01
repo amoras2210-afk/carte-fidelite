@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { DashboardLayout } from "./components/DashboardLayout";
 import { AuthPage } from "./pages/AuthPage";
 import { LandingPage } from "./pages/LandingPage";
-import { BillingRequiredPage } from "./pages/BillingRequiredPage";
+import { BillingStripeReturn } from "./pages/BillingStripeReturn";
 import { PublicCardPage } from "./pages/PublicCardPage";
 import { OverviewPage } from "./pages/OverviewPage";
 import { AnalyticsPage } from "./pages/AnalyticsPage";
@@ -14,16 +14,6 @@ import { SettingsPage } from "./pages/SettingsPage";
 import { ToastProvider } from "./components/ToastContext";
 import { useToast } from "./components/ToastContext";
 import { getBillingStatus } from "./lib/api";
-
-function BillingLoadingScreen() {
-  return (
-    <div className="auth-shell">
-      <article className="card auth-panel">
-        <p className="muted">Vérification de l'abonnement...</p>
-      </article>
-    </div>
-  );
-}
 
 function MerchantApp({ auth }) {
   const { showToast } = useToast();
@@ -44,49 +34,28 @@ function MerchantApp({ auth }) {
   }, [auth.token, showToast]);
 
   useEffect(() => {
-    if (!auth.token) return;
+    if (!auth.token) {
+      setBilling(null);
+      return;
+    }
     queueMicrotask(() => {
       refreshBilling();
     });
   }, [auth.token, refreshBilling]);
 
+  const landingProps = {
+    auth,
+    billing: auth.token ? billing : null,
+    billingLoading: Boolean(auth.token && billingLoading),
+    onBillingRefresh: refreshBilling
+  };
+
   if (!auth.token) {
     return (
       <Routes>
-        <Route path="/" element={<LandingPage auth={auth} />} />
-        <Route path="/accueil" element={<LandingPage auth={auth} />} />
+        <Route path="/" element={<LandingPage {...landingProps} />} />
+        <Route path="/accueil" element={<LandingPage {...landingProps} />} />
         <Route path="/connexion" element={<AuthPage auth={auth} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
-  }
-
-  const isActive = billing?.subscriptionStatus === "active" || billing?.subscriptionStatus === "trialing";
-
-  if (billingLoading && !billing) {
-    return (
-      <Routes>
-        <Route path="/" element={<LandingPage auth={auth} />} />
-        <Route path="/accueil" element={<LandingPage auth={auth} />} />
-        <Route path="/connexion" element={<AuthPage auth={auth} />} />
-        <Route path="/tableau" element={<BillingLoadingScreen />} />
-        <Route path="/abonnement" element={<BillingLoadingScreen />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    );
-  }
-
-  if (!isActive) {
-    return (
-      <Routes>
-        <Route path="/" element={<LandingPage auth={auth} />} />
-        <Route path="/accueil" element={<LandingPage auth={auth} />} />
-        <Route path="/connexion" element={<AuthPage auth={auth} />} />
-        <Route
-          path="/abonnement"
-          element={<BillingRequiredPage auth={auth} billing={billing} onRefresh={refreshBilling} showToast={showToast} />}
-        />
-        <Route path="/tableau" element={<Navigate to="/abonnement" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     );
@@ -94,10 +63,9 @@ function MerchantApp({ auth }) {
 
   return (
     <Routes>
-      <Route path="/" element={<LandingPage auth={auth} />} />
-      <Route path="/accueil" element={<LandingPage auth={auth} />} />
+      <Route path="/" element={<LandingPage {...landingProps} />} />
+      <Route path="/accueil" element={<LandingPage {...landingProps} />} />
       <Route path="/connexion" element={<Navigate to="/tableau" replace />} />
-      <Route path="/abonnement" element={<Navigate to="/tableau" replace />} />
       <Route element={<DashboardLayout auth={auth} />}>
         <Route path="/tableau" element={<OverviewPage auth={auth} />} />
         <Route path="/analytics" element={<AnalyticsPage auth={auth} />} />
@@ -131,6 +99,7 @@ function App() {
       <Routes>
         <Route path="/card" element={<PublicCardPage />} />
         <Route path="/card/:token" element={<PublicCardPage />} />
+        <Route path="/billing" element={<BillingStripeReturn />} />
         <Route path="/*" element={<MerchantApp auth={auth} />} />
       </Routes>
     </ToastProvider>

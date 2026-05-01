@@ -57,8 +57,8 @@ async function createCheckoutSession(req, res, next) {
       mode: "subscription",
       customer: customerId,
       line_items: [{ price: env.stripePriceId, quantity: 1 }],
-      success_url: `${frontBase}/billing?status=success`,
-      cancel_url: `${frontBase}/billing?status=cancel`,
+      success_url: `${frontBase}/tableau?paiement=reussi`,
+      cancel_url: `${frontBase}/?paiement=annule`,
       client_reference_id: merchant.id,
       metadata: { merchant_id: merchant.id },
       subscription_data: {
